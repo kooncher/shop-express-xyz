@@ -6,7 +6,7 @@
         <button @click="$emit('close')" class="close-btn">✕</button>
       </div>
 
-      <div class="modal-body">
+      <div class="modal-body" ref="printArea">
         <!-- Order Info -->
         <div class="section">
           <div class="order-header">
@@ -105,8 +105,8 @@
           </div>
         </div>
 
-        <!-- Update Status -->
-        <div class="section">
+        <!-- Update Status (hidden when printing) -->
+        <div class="section no-print">
           <h3 class="section-title">อัพเดทสถานะ</h3>
           <div class="status-update-grid">
             <div class="form-group">
@@ -143,7 +143,10 @@
         </div>
       </div>
 
-      <div class="modal-footer">
+      <div class="modal-footer no-print">
+        <InvoiceButton :order="orderData" />
+   
+        <div style="flex: 1"></div>
         <button @click="$emit('close')" class="btn-close">
           ปิด
         </button>
@@ -153,6 +156,8 @@
 </template>
 
 <script setup lang="ts">
+import InvoiceButton from './OrderComponents/OrderInvoice.vue'
+
 interface Props {
   order: any
 }
@@ -185,6 +190,7 @@ const orderData = ref({
 const newStatus = ref('')
 const newPaymentStatus = ref('')
 const updating = ref(false)
+const printArea = ref(null)
 
 // Load order details
 const loadOrderDetails = async () => {
@@ -232,6 +238,11 @@ const updateStatus = async () => {
   } finally {
     updating.value = false
   }
+}
+
+// Print order
+const printOrder = () => {
+  window.print()
 }
 
 // Get status class
@@ -655,7 +666,27 @@ onMounted(() => {
   padding: 1.5rem;
   border-top: 1px solid #e5e7eb;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.btn-print {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.95rem;
+}
+
+.btn-print:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
 }
 
 .btn-close {
@@ -674,6 +705,102 @@ onMounted(() => {
   background: #e5e7eb;
 }
 
+/* Print Styles */
+@media print {
+  /* ซ่อนทุกอย่างในหน้า */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* แสดงเฉพาะ modal และเนื้อหาข้างใน */
+  .modal-overlay,
+  .modal-overlay *,
+  .modal-container,
+  .modal-container * {
+    visibility: visible !important;
+  }
+
+  .modal-overlay {
+    position: static !important;
+    background: none !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+
+  .modal-container {
+    max-width: 100% !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    position: static !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* ซ่อนส่วนที่ไม่ต้องการพิมพ์ */
+  .modal-header,
+  .modal-footer,
+  .no-print,
+  .close-btn {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .modal-body {
+    padding: 0 !important;
+  }
+
+  /* จัดรูปแบบหน้ากระดาษ */
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
+  /* เพิ่มหัวกระดาษ */
+  .order-header {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .order-number {
+    font-size: 1.75rem !important;
+  }
+
+  .section {
+    page-break-inside: avoid;
+    margin-bottom: 1rem !important;
+    padding-bottom: 1rem !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+
+  .section:last-of-type {
+    border-bottom: none !important;
+  }
+
+  .items-table {
+    border: 1px solid #e5e7eb !important;
+    page-break-inside: avoid;
+  }
+
+  .items-table table {
+    page-break-inside: avoid;
+  }
+
+  /* รักษาสีของ badge */
+  .badge {
+    border: 1px solid currentColor !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* ป้องกันการตัดข้อมูลที่สำคัญ */
+  .info-grid,
+  .summary-box,
+  .notes-box {
+    page-break-inside: avoid;
+  }
+}
+
 @media (max-width: 768px) {
   .info-grid,
   .status-update-grid {
@@ -687,6 +814,15 @@ onMounted(() => {
   .modal-container {
     max-height: 100vh;
     border-radius: 0;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .btn-print,
+  .btn-close {
+    width: 100%;
   }
 }
 </style>

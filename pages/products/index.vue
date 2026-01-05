@@ -1,51 +1,32 @@
 <template>
   <div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="brand">
-          <span class="brand-icon">🏪</span>
-          <span class="brand-name">ShopExpressXYZ</span>
-        </div>
-      </div>
+    <!-- Mobile Menu Button -->
+    <button 
+      @click="toggleMobileSidebar" 
+      class="mobile-menu-btn"
+    >
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
 
-      <div class="user-section">
-        <div class="user-avatar">👤</div>
-        <div class="user-info">
-          <p class="user-name">ผู้ใช้งาน</p>
-          <p class="user-email">user@email.com</p>
-        </div>
-      </div>
+    <!-- Mobile Overlay -->
+    <div 
+      v-if="showMobileSidebar" 
+      class="mobile-overlay"
+      @click="closeMobileSidebar"
+    ></div>
 
-      <nav class="sidebar-menu">
-        <NuxtLink to="/dashboard" class="menu-item">
-          <span class="menu-icon">🏠</span>
-          <span class="menu-label">หน้าแรก</span>
-        </NuxtLink>
-        <NuxtLink to="/products" class="menu-item" active-class="active">
-          <span class="menu-icon">📦</span>
-          <span class="menu-label">สินค้า</span>
-        </NuxtLink>
-        <NuxtLink to="/orders" class="menu-item">
-          <span class="menu-icon">📋</span>
-          <span class="menu-label">คำสั่งซื้อ</span>
-        </NuxtLink>
-        <NuxtLink to="/customers" class="menu-item">
-          <span class="menu-icon">👥</span>
-          <span class="menu-label">ลูกค้า</span>
-        </NuxtLink>
-        <NuxtLink to="/reports" class="menu-item">
-          <span class="menu-icon">📊</span>
-          <span class="menu-label">รายงาน</span>
-        </NuxtLink>
-        <NuxtLink to="/settings" class="menu-item">
-          <span class="menu-icon">⚙️</span>
-          <span class="menu-label">ตั้งค่า</span>
-        </NuxtLink>
-      </nav>
-    </aside>
+    <Sidebar
+      :menu-items="menuItems"
+      :user="userData"
+      :is-mobile-open="showMobileSidebar"
+      @item-click="handleMenuClick"
+      @toggle="handleToggle"
+      @close-mobile="closeMobileSidebar"
+    />
 
-    <main class="main-content">
+    <main class="main-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <div class="content-wrapper">
         <!-- Header -->
         <div class="page-header">
@@ -212,9 +193,11 @@
 <script setup>
 import ProductModal from '~/components/products/ProductModal.vue'
 
-// ใช้ supabase จาก plugin
+const { user } = useAuth()
 const { $supabase } = useNuxtApp()
 
+const isSidebarCollapsed = ref(false)
+const showMobileSidebar = ref(false)
 const loading = ref(true)
 const showModal = ref(false)
 const showDeleteConfirm = ref(false)
@@ -226,6 +209,21 @@ const searchQuery = ref('')
 const selectedCategory = ref('')
 const filterActive = ref('')
 
+const menuItems = ref([
+  { id: 'home', label: 'หน้าแรก', icon: '🏠' },
+  { id: 'products', label: 'สินค้า', icon: '📦' },
+  { id: 'orders', label: 'คำสั่งซื้อ', icon: '📋' },
+  { id: 'customers', label: 'ลูกค้า', icon: '👥' },
+  { id: 'reports', label: 'รายงาน', icon: '📊' },
+  { id: 'settings', label: 'ตั้งค่า', icon: '⚙️' }
+])
+
+const userData = computed(() => ({
+  name: user.value?.profile?.full_name || 'ผู้ใช้งาน',
+  email: user.value?.email || '',
+  avatar: '👤'
+}))
+
 // Computed properties
 const lowStockCount = computed(() => 
   products.value.filter(p => p.stock > 0 && p.stock <= p.min_stock).length
@@ -234,6 +232,37 @@ const lowStockCount = computed(() =>
 const outOfStockCount = computed(() => 
   products.value.filter(p => p.stock === 0).length
 )
+
+// Mobile Sidebar Controls
+const toggleMobileSidebar = () => {
+  showMobileSidebar.value = !showMobileSidebar.value
+}
+
+const closeMobileSidebar = () => {
+  showMobileSidebar.value = false
+}
+
+const handleToggle = (isCollapsed) => {
+  isSidebarCollapsed.value = isCollapsed
+}
+
+const handleMenuClick = (item) => {
+  closeMobileSidebar()
+  
+  if (item.id === 'home') {
+    navigateTo('/dashboard')
+  } else if (item.id === 'products') {
+    navigateTo('/products')
+  } else if (item.id === 'orders') {
+    navigateTo('/orders')
+  } else if (item.id === 'customers') {
+    navigateTo('/customers')
+  } else if (item.id === 'reports') {
+    navigateTo('/reports')
+  } else if (item.id === 'settings') {
+    navigateTo('/settings')
+  }
+}
 
 // Load products
 const loadProducts = async () => {
@@ -323,14 +352,12 @@ const handleDelete = async () => {
   if (!productToDelete.value) return
 
   try {
-    // Delete image from storage if exists
     if (productToDelete.value.image_path) {
       await $supabase.storage
         .from('product-images')
         .remove([productToDelete.value.image_path])
     }
 
-    // Delete product from database
     const { error } = await $supabase
       .from('products')
       .delete()
@@ -375,124 +402,72 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* CSS เหมือนเดิมทั้งหมด */
 .dashboard-container {
   min-height: 100vh;
   background: #f9fafb;
-  display: flex;
+  position: relative;
 }
 
-.sidebar {
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: flex !important;
   position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  width: 300px;
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-  color: white;
-  display: flex;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1100;
+  width: 48px;
+  height: 48px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  cursor: pointer;
   flex-direction: column;
-  z-index: 1000;
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.brand-icon {
-  font-size: 1.5rem;
-}
-
-.brand-name {
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.user-section {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-weight: 600;
-  font-size: 0.875rem;
-  margin-bottom: 0.125rem;
-}
-
-.user-email {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.sidebar-menu {
-  flex: 1;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.menu-item {
-  display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.875rem 1rem;
-  border-radius: 0.5rem;
-  color: rgba(255, 255, 255, 0.7);
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
-  text-decoration: none;
 }
 
-.menu-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+.mobile-menu-btn:hover {
+  background: #f9fafb;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
 }
 
-.menu-item.active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
-  color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  border-left: 3px solid #667eea;
+.mobile-menu-btn:active {
+  transform: scale(0.95);
 }
 
-.menu-icon {
-  font-size: 1.5rem;
+.hamburger-line {
+  width: 24px;
+  height: 2.5px;
+  background: #1e293b;
+  border-radius: 2px;
 }
 
-.menu-label {
-  font-weight: 500;
+/* Mobile Overlay */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .main-content {
   margin-left: 300px;
-  flex: 1;
   min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
 }
 
 .content-wrapper {
@@ -914,11 +889,38 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
   
   .content-wrapper {
     padding: 1rem;
+    padding-top: 5rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .filter-select {
+    width: 100%;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

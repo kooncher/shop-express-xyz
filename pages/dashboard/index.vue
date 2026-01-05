@@ -1,35 +1,60 @@
 <template>
   <div class="dashboard-container">
-       <Sidebar
+    <!-- Mobile Menu Button -->
+    <button 
+      @click="toggleMobileSidebar" 
+      class="mobile-menu-btn"
+    >
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div 
+      v-if="showMobileSidebar" 
+      class="mobile-overlay"
+      @click="closeMobileSidebar"
+    ></div>
+
+    <Sidebar
       :menu-items="menuItems"
       :user="userData"
+      :is-mobile-open="showMobileSidebar"
       @item-click="handleMenuClick"
       @toggle="handleToggle"
+      @close-mobile="closeMobileSidebar"
     />
-    
 
     <main class="main-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <div class="content-wrapper">
         <!-- Header -->
         <div class="page-header">
-          <div>
+          <div class="header-text">
             <h1 class="page-title">{{ currentPage }}</h1>
             <p class="page-subtitle">ยินดีต้อนรับกลับมา, {{ user?.profile?.full_name || 'ผู้ใช้งาน' }}!</p>
           </div>
           
           <button @click="handleLogout" class="logout-btn">
-            ออกจากระบบ
+            <span class="logout-icon">🚪</span>
+            <span class="logout-text">ออกจากระบบ</span>
           </button>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="loading" class="loading-container">
+          <div class="spinner"></div>
+          <p>กำลังโหลดข้อมูล...</p>
+        </div>
+
         <!-- Stats Cards -->
-        <div class="stats-grid">
+        <div v-else class="stats-grid">
           <div class="stat-card">
             <div class="stat-content">
               <div class="stat-info">
                 <p class="stat-label">ยอดขายวันนี้</p>
-                <p class="stat-value">฿12,580</p>
-                <p class="stat-change positive">+12.5% จากเมื่อวาน</p>
+                <p class="stat-value">฿{{ dashboardData.stats.totalSales.toLocaleString() }}</p>
+                <p class="stat-change positive">จากคำสั่งซื้อที่ชำระแล้ว</p>
               </div>
               <div class="stat-icon blue">
                 <span>💰</span>
@@ -41,8 +66,8 @@
             <div class="stat-content">
               <div class="stat-info">
                 <p class="stat-label">คำสั่งซื้อใหม่</p>
-                <p class="stat-value">45</p>
-                <p class="stat-change positive">+8 จากเมื่อวาน</p>
+                <p class="stat-value">{{ dashboardData.stats.newOrdersCount }}</p>
+                <p class="stat-change positive">วันนี้</p>
               </div>
               <div class="stat-icon green">
                 <span>📦</span>
@@ -54,7 +79,7 @@
             <div class="stat-content">
               <div class="stat-info">
                 <p class="stat-label">ลูกค้าใหม่</p>
-                <p class="stat-value">28</p>
+                <p class="stat-value">{{ dashboardData.stats.newCustomersCount }}</p>
                 <p class="stat-change neutral">สัปดาห์นี้</p>
               </div>
               <div class="stat-icon purple">
@@ -67,8 +92,8 @@
             <div class="stat-content">
               <div class="stat-info">
                 <p class="stat-label">สินค้าคงเหลือ</p>
-                <p class="stat-value">1,234</p>
-                <p class="stat-change warning">15 รายการใกล้หมด</p>
+                <p class="stat-value">{{ dashboardData.stats.totalStock.toLocaleString() }}</p>
+                <p class="stat-change warning">{{ dashboardData.stats.lowStockCount }} รายการใกล้หมด</p>
               </div>
               <div class="stat-icon orange">
                 <span>📊</span>
@@ -77,70 +102,57 @@
           </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="card">
-          <h2 class="card-title">การดำเนินการด่วน</h2>
-          <div class="quick-actions">
-            <button class="action-btn">
-              <span class="action-icon">➕</span>
-              <span class="action-label">เพิ่มสินค้า</span>
-            </button>
-            <button class="action-btn">
-              <span class="action-icon">📋</span>
-              <span class="action-label">จัดการคำสั่งซื้อ</span>
-            </button>
-            <button class="action-btn">
-              <span class="action-icon">👥</span>
-              <span class="action-label">จัดการลูกค้า</span>
-            </button>
-            <button class="action-btn">
-              <span class="action-icon">📊</span>
-              <span class="action-label">ดูรายงาน</span>
-            </button>
+        <!-- Charts Section -->
+        <div v-if="!loading" class="charts-grid">
+          <div class="card chart-card">
+            <h2 class="card-title">ยอดขาย 7 วันล่าสุด</h2>
+            <div class="chart-container">
+              <canvas ref="salesChart"></canvas>
+            </div>
+          </div>
+
+          <div class="card chart-card">
+            <h2 class="card-title">สินค้าขายดี Top 5</h2>
+            <div class="chart-container">
+              <canvas ref="topProductsChart"></canvas>
+            </div>
           </div>
         </div>
 
         <!-- Recent Orders -->
-        <div class="card">
+        <div v-if="!loading" class="card orders-card">
           <h2 class="card-title">คำสั่งซื้อล่าสุด</h2>
-          <div class="table-container">
+          <div v-if="dashboardData.recentOrders.length === 0" class="empty-state">
+            <p>ยังไม่มีคำสั่งซื้อ</p>
+          </div>
+          <div v-else class="table-container">
             <table class="data-table">
               <thead>
                 <tr>
                   <th>รหัสคำสั่งซื้อ</th>
                   <th>ลูกค้า</th>
-                  <th>ยอดรวม</th>
+                  <th class="hide-mobile">ยอดรวม</th>
                   <th>สถานะ</th>
-                  <th>วันที่</th>
+                  <th class="hide-mobile">วันที่</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td class="font-semibold">#ORD-001</td>
-                  <td>สมชาย ใจดี</td>
-                  <td class="font-semibold">฿2,450</td>
-                  <td>
-                    <span class="badge success">ชำระแล้ว</span>
+                <tr v-for="order in dashboardData.recentOrders" :key="order.id">
+                  <td class="font-semibold">
+                    <div class="order-number">{{ order.order_number }}</div>
+                    <div class="mobile-only mobile-date">{{ formatDate(order.created_at) }}</div>
                   </td>
-                  <td class="text-muted">10 พ.ย. 2567</td>
-                </tr>
-                <tr>
-                  <td class="font-semibold">#ORD-002</td>
-                  <td>สมหญิง รักดี</td>
-                  <td class="font-semibold">฿1,890</td>
                   <td>
-                    <span class="badge warning">รอชำระ</span>
+                    <div>{{ order.customer_name }}</div>
+                    <div class="mobile-only mobile-price">฿{{ parseFloat(order.total).toLocaleString() }}</div>
                   </td>
-                  <td class="text-muted">10 พ.ย. 2567</td>
-                </tr>
-                <tr>
-                  <td class="font-semibold">#ORD-003</td>
-                  <td>สมศักดิ์ มีสุข</td>
-                  <td class="font-semibold">฿3,200</td>
+                  <td class="font-semibold hide-mobile">฿{{ parseFloat(order.total).toLocaleString() }}</td>
                   <td>
-                    <span class="badge info">กำลังจัดส่ง</span>
+                    <span :class="['badge', getStatusClass(order.status)]">
+                      {{ getStatusLabel(order.status) }}
+                    </span>
                   </td>
-                  <td class="text-muted">9 พ.ย. 2567</td>
+                  <td class="text-muted hide-mobile">{{ formatDate(order.created_at) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -152,14 +164,38 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  middleware: 'auth'
-})
+import Chart from 'chart.js/auto'
 
 const { user, signOut } = useAuth()
+const { getAllDashboardData } = useDashboard()
 
 const currentPage = ref('หน้าแรก')
 const isSidebarCollapsed = ref(false)
+const showMobileSidebar = ref(false)
+const loading = ref(true)
+
+// ข้อมูล Dashboard
+const dashboardData = ref({
+  recentOrders: [] as any[],
+  stats: {
+    totalSales: 0,
+    newOrdersCount: 0,
+    newCustomersCount: 0,
+    totalStock: 0,
+    lowStockCount: 0
+  },
+  chartData: {
+    dates: [] as string[],
+    sales: [] as number[]
+  },
+  topProducts: {
+    names: [] as string[],
+    sales: [] as number[]
+  }
+})
+
+const salesChart = ref<HTMLCanvasElement | null>(null)
+const topProductsChart = ref<HTMLCanvasElement | null>(null)
 
 const menuItems = ref([
   { id: 'home', label: 'หน้าแรก', icon: '🏠' },
@@ -176,24 +212,204 @@ const userData = computed(() => ({
   avatar: '👤'
 }))
 
-const handleMenuClick = (item: any) => {
-  currentPage.value = item.label
+// Mobile Sidebar Controls
+const toggleMobileSidebar = () => {
+  showMobileSidebar.value = !showMobileSidebar.value
+}
+
+const closeMobileSidebar = () => {
+  showMobileSidebar.value = false
+}
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('th-TH', { 
+    day: 'numeric', 
+    month: 'short', 
+    year: 'numeric' 
+  })
+}
+
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    'pending': 'รอชำระ',
+    'processing': 'กำลังดำเนินการ',
+    'shipping': 'กำลังจัดส่ง',
+    'completed': 'สำเร็จ',
+    'cancelled': 'ยกเลิก'
+  }
+  return labels[status] || status
+}
+
+const getStatusClass = (status: string) => {
+  const classes: Record<string, string> = {
+    'completed': 'success',
+    'shipping': 'info',
+    'processing': 'info',
+    'pending': 'warning',
+    'cancelled': 'default'
+  }
+  return classes[status] || 'default'
+}
+
+// สร้างกราฟ
+const renderCharts = () => {
+  if (salesChart.value && dashboardData.value.chartData.dates.length > 0) {
+    const ctx = salesChart.value.getContext('2d')
+    if (ctx) {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 300)
+      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)')
+      gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)')
+      
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dashboardData.value.chartData.dates,
+          datasets: [{
+            label: 'ยอดขาย (฿)',
+            data: dashboardData.value.chartData.sales,
+            borderColor: 'rgb(99, 102, 241)',
+            backgroundColor: gradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: 'rgb(99, 102, 241)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: false,
+              callbacks: {
+                label: (context) => '฿' + context.parsed.y.toLocaleString()
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0, 0, 0, 0.05)' },
+              ticks: {
+                callback: function(value: any) {
+                  return '฿' + value.toLocaleString()
+                }
+              }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      })
+    }
+  }
+
+  if (topProductsChart.value && dashboardData.value.topProducts.names.length > 0) {
+    const ctx2 = topProductsChart.value.getContext('2d')
+    if (ctx2) {
+      new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: dashboardData.value.topProducts.names,
+          datasets: [{
+            label: 'ยอดขาย (฿)',
+            data: dashboardData.value.topProducts.sales,
+            backgroundColor: [
+              'rgba(99, 102, 241, 0.8)',
+              'rgba(139, 92, 246, 0.8)',
+              'rgba(236, 72, 153, 0.8)',
+              'rgba(251, 146, 60, 0.8)',
+              'rgba(34, 197, 94, 0.8)',
+            ],
+            borderRadius: 8,
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: false,
+              callbacks: {
+                label: (context) => '฿' + context.parsed.y.toLocaleString()
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(0, 0, 0, 0.05)' },
+              ticks: {
+                callback: function(value: any) {
+                  return '฿' + value.toLocaleString()
+                }
+              }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      })
+    }
+  }
+}
+
+const loadDashboardData = async () => {
+  loading.value = true
   
-  // Navigate to different pages
+  try {
+    const { data, error } = await getAllDashboardData()
+
+    if (error) {
+      console.error('Error loading dashboard:', error)
+      return
+    }
+
+    if (data) {
+      dashboardData.value = data
+    }
+
+    await nextTick()
+    renderCharts()
+
+  } catch (error) {
+    console.error('Error loading dashboard:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleMenuClick = (item: any) => {
+  console.log('Menu clicked:', item) // Debug log
+  
+  currentPage.value = item.label
+  closeMobileSidebar()
+  
+  // Navigate to pages
   if (item.id === 'home') {
     navigateTo('/dashboard')
   } else if (item.id === 'products') {
-    navigateTo('/products')  // แก้เป็น /products แทน /product
+    navigateTo('/products')
   } else if (item.id === 'orders') {
     navigateTo('/orders')
   } else if (item.id === 'customers') {
     navigateTo('/customers')
   } else if (item.id === 'reports') {
     navigateTo('/reports')
-    console.log('Navigate to reports (coming soon)')
   } else if (item.id === 'settings') {
     navigateTo('/settings')
-    console.log('Navigate to settings (coming soon)')
   }
 }
 
@@ -204,19 +420,78 @@ const handleToggle = (isCollapsed: boolean) => {
 const handleLogout = async () => {
   await signOut()
 }
+
+onMounted(() => {
+  loadDashboardData()
+})
 </script>
-<<style scoped>
+
+<style scoped>
+/* Base Styles */
 .dashboard-container {
   min-height: 100vh;
   background: #f9fafb;
+  position: relative;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1100;
+  width: 48px;
+  height: 48px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.mobile-menu-btn:hover {
+  background: #f9fafb;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.95);
+}
+
+.hamburger-line {
+  width: 24px;
+  height: 2.5px;
+  background: #1e293b;
+  border-radius: 2px;
+}
+
+/* Mobile Overlay */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .main-content {
-  margin-left: 260px;
+  margin-left: 300px;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
-  display: flex; /* เพิ่ม */
-  justify-content: center; /* เพิ่ม */
+  display: flex;
+  justify-content: center;
 }
 
 .main-content.sidebar-collapsed {
@@ -226,10 +501,10 @@ const handleLogout = async () => {
 .content-wrapper {
   padding: 2rem;
   max-width: 1400px;
-  width: 100%; /* เพิ่ม */
+  width: 100%;
 }
 
-/* Page Header */
+/* Header */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -237,6 +512,11 @@ const handleLogout = async () => {
   margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 1rem;
+}
+
+.header-text {
+  flex: 1;
+  min-width: 200px;
 }
 
 .page-title {
@@ -261,12 +541,43 @@ const handleLogout = async () => {
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .logout-btn:hover {
   background: #dc2626;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.logout-icon {
+  font-size: 1.1rem;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* Stats Grid */
@@ -338,6 +649,7 @@ const handleLogout = async () => {
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
+  flex-shrink: 0;
 }
 
 .stat-icon.blue {
@@ -356,14 +668,20 @@ const handleLogout = async () => {
   background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
 }
 
-/* Card */
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
 .card {
   background: white;
   border-radius: 1rem;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid #f3f4f6;
-  margin-bottom: 1.5rem;
 }
 
 .card-title {
@@ -373,50 +691,27 @@ const handleLogout = async () => {
   margin-bottom: 1.25rem;
 }
 
-/* Quick Actions */
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem;
-  background: white;
-  border: 2px dashed #d1d5db;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-}
-
-.action-btn:hover {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  transform: translateY(-2px);
-}
-
-.action-icon {
-  font-size: 2rem;
-}
-
-.action-label {
-  font-weight: 500;
-  color: #374151;
+.chart-container {
+  height: 300px;
+  position: relative;
 }
 
 /* Table */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
 .table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px;
 }
 
 .data-table thead tr {
@@ -429,6 +724,7 @@ const handleLogout = async () => {
   font-size: 0.875rem;
   font-weight: 600;
   color: #374151;
+  white-space: nowrap;
 }
 
 .data-table tbody tr {
@@ -454,13 +750,13 @@ const handleLogout = async () => {
   color: #6b7280;
 }
 
-/* Badge */
 .badge {
   display: inline-block;
   padding: 0.375rem 0.875rem;
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .badge.success {
@@ -478,29 +774,186 @@ const handleLogout = async () => {
   color: #1e40af;
 }
 
-/* Mobile Responsive */
+.badge.default {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Mobile-specific elements */
+.mobile-only {
+  display: none;
+}
+
+.mobile-date,
+.mobile-price {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+/* Responsive Breakpoints */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile Large (481px - 768px) */
 @media (max-width: 768px) {
+  /* แสดงปุ่ม Mobile Menu */
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+  
+  /* ลบ margin ของ main content */
   .main-content {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
   
   .main-content.sidebar-collapsed {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
   
   .content-wrapper {
     padding: 1rem;
+    padding-top: 5rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
   
   .page-title {
     font-size: 1.5rem;
   }
   
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .page-subtitle {
+    font-size: 0.875rem;
   }
   
-  .quick-actions {
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1.25rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+  
+  .stat-icon {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.5rem;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .chart-container {
+    height: 250px;
+  }
+  
+  .card {
+    padding: 1rem;
+  }
+  
+  .card-title {
+    font-size: 1.125rem;
+  }
+  
+  /* Table responsive */
+  .hide-mobile {
+    display: none;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+  
+  .data-table {
+    min-width: 100%;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .order-number {
+    font-weight: 600;
+  }
+}
+
+/* Mobile Small (max 480px) */
+@media (max-width: 480px) {
+  .content-wrapper {
+    padding: 0.75rem;
+    padding-top: 4.5rem;
+  }
+  
+  .page-title {
+    font-size: 1.25rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 1.375rem;
+  }
+  
+  .stat-label,
+  .stat-change {
+    font-size: 0.8rem;
+  }
+  
+  .chart-container {
+    height: 200px;
+  }
+  
+  .logout-text {
+    display: none;
+  }
+  
+  .logout-btn {
+    padding: 0.625rem 1rem;
+    width: auto;
+  }
+  
+  .badge {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.7rem;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .chart-container {
+    height: 200px;
+  }
+  
+  .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }

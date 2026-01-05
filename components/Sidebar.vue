@@ -1,5 +1,8 @@
 <template>
-  <aside class="sidebar" :class="{ collapsed: isCollapsed }">
+  <aside class="sidebar" :class="{ 
+    collapsed: isCollapsed,
+    'mobile-open': isMobileOpen 
+  }">
     <!-- Header -->
     <div class="sidebar-header">
        <div class="brand" v-if="!isCollapsed">
@@ -11,8 +14,6 @@
         <span class="hamburger"></span>
         <span class="hamburger"></span>
       </button>
-      
-     
     </div>
 
     <!-- User Section (at top) -->
@@ -63,13 +64,16 @@ interface UserData {
 interface Props {
   menuItems: MenuItem[]
   user: UserData
+  isMobileOpen?: boolean // เพิ่ม prop นี้
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   toggle: [isCollapsed: boolean]
   logout: []
+  itemClick: [item: MenuItem] // เพิ่ม emit นี้
+  closeMobile: [] // เพิ่ม emit นี้
 }>()
 
 const route = useRoute()
@@ -106,9 +110,13 @@ const toggleSidebar = () => {
   emit('toggle', isCollapsed.value)
 }
 
-// แก้ไขตรงนี้ - navigate โดยตรง
+// แก้ไขตรงนี้ - navigate และ emit
 const handleItemClick = (item: MenuItem) => {
   showUserMenu.value = false
+  
+  // Emit ให้ parent (Dashboard) จัดการ
+  emit('itemClick', item)
+  emit('closeMobile')
   
   // Navigate โดยตรง
   if (item.id === 'home') {
@@ -150,7 +158,7 @@ onMounted(() => {
   color: white;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
+  transition: all 0.3s ease;
   z-index: 1000;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
 }
@@ -396,13 +404,70 @@ onMounted(() => {
   border-bottom: 3px solid #667eea;
 }
 
-/* Responsive */
+/* Mobile Responsive */
 @media (max-width: 768px) {
   .sidebar {
+    /* ซ่อนนอกจอทางซ้าย */
     transform: translateX(-100%);
+    box-shadow: none;
+    /* กำหนดขนาดเต็มเสมอใน mobile */
+    width: 280px !important;
   }
 
-  .sidebar:not(.collapsed) {
+  /* เมื่อเปิด sidebar ใน mobile */
+  .sidebar.mobile-open {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* ยกเลิก collapsed mode ใน mobile */
+  .sidebar.collapsed {
+    width: 280px !important;
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.collapsed.mobile-open {
+    transform: translateX(0) !important;
+  }
+  
+  /* แสดงข้อมูลเต็มเสมอใน mobile */
+  .sidebar.collapsed .brand {
+    display: flex !important;
+  }
+  
+  .sidebar.collapsed .user-info {
+    display: block !important;
+  }
+  
+  .sidebar.collapsed .menu-label {
+    display: inline !important;
+  }
+  
+  .sidebar.collapsed .menu-item {
+    justify-content: flex-start;
+    padding: 0.875rem 1rem;
+  }
+  
+  .sidebar.collapsed .user-section {
+    justify-content: flex-start;
+    padding: 1rem 1.5rem;
+  }
+  
+  .sidebar.collapsed .menu-item.active {
+    border-left: 3px solid #667eea;
+    border-bottom: none;
+  }
+}
+
+/* Desktop - ปุ่ม Hamburger ยังใช้งานได้ */
+@media (min-width: 769px) {
+  .sidebar {
+    /* Sidebar แสดงปกติ */
+    transform: translateX(0);
+  }
+  
+  /* เมื่อกดปุ่ม Hamburger ใน Desktop ก็ซ่อนได้ */
+  .sidebar.mobile-open {
     transform: translateX(0);
   }
 }

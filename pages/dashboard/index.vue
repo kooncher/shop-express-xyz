@@ -148,8 +148,8 @@
                   </td>
                   <td class="font-semibold hide-mobile">฿{{ parseFloat(order.total).toLocaleString() }}</td>
                   <td>
-                    <span :class="['badge', getStatusClass(order.status)]">
-                      {{ getStatusLabel(order.status) }}
+                    <span :class="['badge', getStatusClass(order.payment_status)]">
+                      {{ getStatusLabel(order.payment_status) }}
                     </span>
                   </td>
                   <td class="text-muted hide-mobile">{{ formatDate(order.created_at) }}</td>
@@ -163,6 +163,8 @@
   </div>
 </template>
 
+
+
 <script setup lang="ts">
 import Chart from 'chart.js/auto'
 
@@ -173,6 +175,10 @@ const currentPage = ref('หน้าแรก')
 const isSidebarCollapsed = ref(false)
 const showMobileSidebar = ref(false)
 const loading = ref(true)
+
+// --- เพิ่มตัวแปรเก็บ Instance เพื่อใช้ทำลายกราฟเก่าก่อนวาดใหม่ ---
+let salesChartInstance: Chart | null = null
+let topProductsChartInstance: Chart | null = null
 
 // ข้อมูล Dashboard
 const dashboardData = ref({
@@ -230,9 +236,12 @@ const formatDate = (dateString: string) => {
   })
 }
 
+// ปรับปรุงสถานะให้รองรับข้อมูลที่คุณแก้ไขล่าสุด
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
     'pending': 'รอชำระ',
+    'paid': 'ชำระเงินแล้ว',
+    'ชำระเงินแล้ว': 'ชำระเงินแล้ว',
     'processing': 'กำลังดำเนินการ',
     'shipping': 'กำลังจัดส่ง',
     'completed': 'สำเร็จ',
@@ -240,28 +249,26 @@ const getStatusLabel = (status: string) => {
   }
   return labels[status] || status
 }
-
 const getStatusClass = (status: string) => {
-  const classes: Record<string, string> = {
-    'completed': 'success',
-    'shipping': 'info',
-    'processing': 'info',
-    'pending': 'warning',
-    'cancelled': 'default'
-  }
-  return classes[status] || 'default'
+  if (status === 'paid' || status === 'ชำระเงินแล้ว' || status === 'completed') return 'success'
+  if (status === 'pending') return 'warning'
+  return 'default'
 }
 
-// สร้างกราฟ
+// --- แก้ไขฟังก์ชันสร้างกราฟให้เสถียรขึ้น ---
 const renderCharts = () => {
+  // 1. กราฟยอดขาย (Line Chart)
   if (salesChart.value && dashboardData.value.chartData.dates.length > 0) {
     const ctx = salesChart.value.getContext('2d')
     if (ctx) {
+      // ลบกราฟเดิมทิ้งก่อนวาดใหม่ (กันบั๊กวาดทับกัน)
+      if (salesChartInstance) salesChartInstance.destroy()
+      
       const gradient = ctx.createLinearGradient(0, 0, 0, 300)
       gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)')
       gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)')
       
-      new Chart(ctx, {
+      salesChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
           labels: dashboardData.value.chartData.dates,
@@ -273,93 +280,45 @@ const renderCharts = () => {
             borderWidth: 3,
             fill: true,
             tension: 0.4,
-            pointRadius: 5,
-            pointBackgroundColor: 'rgb(99, 102, 241)',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointHoverRadius: 7,
+            pointRadius: 5
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: 12,
-              cornerRadius: 8,
-              displayColors: false,
-              callbacks: {
-                label: (context) => '฿' + context.parsed.y.toLocaleString()
-              }
-            }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: {
               beginAtZero: true,
-              grid: { color: 'rgba(0, 0, 0, 0.05)' },
-              ticks: {
-                callback: function(value: any) {
-                  return '฿' + value.toLocaleString()
-                }
-              }
-            },
-            x: { grid: { display: false } }
+              ticks: { callback: (val) => '฿' + val.toLocaleString() }
+            }
           }
         }
       })
     }
   }
 
-  if (topProductsChart.value && dashboardData.value.topProducts.names.length > 0) {
+  // 2. กราฟสินค้าขายดี (Bar Chart)
+  if (topProductsChart.value) {
     const ctx2 = topProductsChart.value.getContext('2d')
     if (ctx2) {
-      new Chart(ctx2, {
+      if (topProductsChartInstance) topProductsChartInstance.destroy()
+      
+      topProductsChartInstance = new Chart(ctx2, {
         type: 'bar',
         data: {
-          labels: dashboardData.value.topProducts.names,
+          labels: dashboardData.value.topProducts.names.length > 0 ? dashboardData.value.topProducts.names : ['ไม่มีข้อมูล'],
           datasets: [{
             label: 'ยอดขาย (฿)',
-            data: dashboardData.value.topProducts.sales,
-            backgroundColor: [
-              'rgba(99, 102, 241, 0.8)',
-              'rgba(139, 92, 246, 0.8)',
-              'rgba(236, 72, 153, 0.8)',
-              'rgba(251, 146, 60, 0.8)',
-              'rgba(34, 197, 94, 0.8)',
-            ],
-            borderRadius: 8,
-            borderWidth: 0,
+            data: dashboardData.value.topProducts.sales.length > 0 ? dashboardData.value.topProducts.sales : [0],
+            backgroundColor: 'rgba(99, 102, 241, 0.8)',
+            borderRadius: 8
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              padding: 12,
-              cornerRadius: 8,
-              displayColors: false,
-              callbacks: {
-                label: (context) => '฿' + context.parsed.y.toLocaleString()
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: 'rgba(0, 0, 0, 0.05)' },
-              ticks: {
-                callback: function(value: any) {
-                  return '฿' + value.toLocaleString()
-                }
-              }
-            },
-            x: { grid: { display: false } }
-          }
+          plugins: { legend: { display: false } }
         }
       })
     }
@@ -368,22 +327,16 @@ const renderCharts = () => {
 
 const loadDashboardData = async () => {
   loading.value = true
-  
   try {
     const { data, error } = await getAllDashboardData()
-
-    if (error) {
-      console.error('Error loading dashboard:', error)
-      return
-    }
-
+    if (error) throw error
+    
     if (data) {
       dashboardData.value = data
+      // สำคัญ: ต้องรอให้ Vue เรนเดอร์ Canvas เสร็จก่อนเรียกใช้ Chart.js
+      await nextTick()
+      renderCharts()
     }
-
-    await nextTick()
-    renderCharts()
-
   } catch (error) {
     console.error('Error loading dashboard:', error)
   } finally {
@@ -392,25 +345,9 @@ const loadDashboardData = async () => {
 }
 
 const handleMenuClick = (item: any) => {
-  console.log('Menu clicked:', item) // Debug log
-  
   currentPage.value = item.label
   closeMobileSidebar()
-  
-  // Navigate to pages
-  if (item.id === 'home') {
-    navigateTo('/dashboard')
-  } else if (item.id === 'products') {
-    navigateTo('/products')
-  } else if (item.id === 'orders') {
-    navigateTo('/orders')
-  } else if (item.id === 'customers') {
-    navigateTo('/customers')
-  } else if (item.id === 'reports') {
-    navigateTo('/reports')
-  } else if (item.id === 'settings') {
-    navigateTo('/settings')
-  }
+  navigateTo(`/${item.id === 'home' ? 'dashboard' : item.id}`)
 }
 
 const handleToggle = (isCollapsed: boolean) => {
@@ -424,8 +361,13 @@ const handleLogout = async () => {
 onMounted(() => {
   loadDashboardData()
 })
-</script>
 
+// ล้าง Instance เมื่อออกจากหน้าจอเพื่อประหยัด RAM
+onUnmounted(() => {
+  if (salesChartInstance) salesChartInstance.destroy()
+  if (topProductsChartInstance) topProductsChartInstance.destroy()
+})
+</script>
 <style scoped>
 /* Base Styles */
 .dashboard-container {

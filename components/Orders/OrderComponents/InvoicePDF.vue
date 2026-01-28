@@ -141,9 +141,9 @@
             <p class="signature-date">วันที่ .........................</p>
           </div>
         </div>
-        <div class="thank-you">
+        <!-- <div class="thank-you">
           <p>ขอบคุณที่ใช้บริการ</p>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

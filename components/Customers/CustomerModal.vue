@@ -3,7 +3,7 @@
     <div class="modal-container">
       <div class="modal-header">
         <h2 class="modal-title">
-          {{ customer ? 'แก้ไขข้อมูลลูกค้า' : 'เพิ่มลูกค้าใหม่' }}
+          {{ customer ? "แก้ไขข้อมูลลูกค้า" : "เพิ่มลูกค้าใหม่" }}
         </h2>
         <button @click="$emit('close')" class="close-btn">✕</button>
       </div>
@@ -38,6 +38,8 @@
               v-model="formData.phone"
               type="tel"
               class="form-input"
+              maxlength="10"
+              @keypress="allowOnlyNumbers"
               placeholder="081-234-5678"
             />
           </div>
@@ -72,7 +74,7 @@
             ยกเลิก
           </button>
           <button type="submit" :disabled="loading" class="btn-submit">
-            {{ loading ? 'กำลังบันทึก...' : 'บันทึก' }}
+            {{ loading ? "กำลังบันทึก..." : "บันทึก" }}
           </button>
         </div>
       </form>
@@ -82,62 +84,70 @@
 
 <script setup lang="ts">
 interface Props {
-  customer?: any
+  customer?: any;
 }
-
-const props = defineProps<Props>()
+const allowOnlyNumbers = (event: KeyboardEvent) => {
+  if (!/\d/.test(event.key)) {
+    event.preventDefault()
+  }
+}
+const props = defineProps<Props>();
 const emit = defineEmits<{
-  close: []
-  save: []
-}>()
+  close: [];
+  save: [];
+}>();
 
-const { createCustomer, updateCustomer } = useCustomers()
+const { createCustomer, updateCustomer } = useCustomers();
 
-const loading = ref(false)
-const error = ref('')
+const loading = ref(false);
+const error = ref("");
 
 const formData = ref({
-  name: '',
-  email: '',
-  phone: '',
-  address: '',
-  status: 'active'
-})
+  name: "",
+  email: "",
+  phone: "",
+  address: "",
+  status: "active",
+});
 
 // Initialize form data
 onMounted(() => {
   if (props.customer) {
     formData.value = {
-      name: props.customer.name || '',
-      email: props.customer.email || '',
-      phone: props.customer.phone || '',
-      address: props.customer.address || '',
-      status: props.customer.status || 'active'
-    }
+      name: props.customer.name || "",
+      email: props.customer.email || "",
+      phone: props.customer.phone || "",
+      address: props.customer.address || "",
+      status: props.customer.status || "active",
+    };
   }
-})
+});
 
 // Handle submit
 const handleSubmit = async () => {
   try {
-    loading.value = true
-    error.value = ''
+    loading.value = true;
+    error.value = "";
 
     if (props.customer) {
-      const { error: updateError } = await updateCustomer(props.customer.id, formData.value)
-      if (updateError) throw updateError
+      const { error: updateError } = await updateCustomer(
+        props.customer.id,
+        formData.value
+      );
+      if (updateError) throw updateError;
     } else {
-      const { error: createError } = await createCustomer(formData.value)
-      if (createError) throw createError
+      const { error: createError } = await createCustomer(formData.value);
+      if (createError) throw createError;
     }
 
-    emit('save')
+    emit("save");
   } catch (err: any) {
-    error.value = err.message || 'เกิดข้อผิดพลาด'
+    error.value = err.message || "เกิดข้อผิดพลาด";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
+
 </script>
 
 <style scoped>
@@ -225,7 +235,7 @@ const handleSubmit = async () => {
 }
 
 .form-label.required::after {
-  content: ' *';
+  content: " *";
   color: #ef4444;
 }
 

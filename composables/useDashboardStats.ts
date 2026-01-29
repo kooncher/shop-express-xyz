@@ -5,85 +5,52 @@ export const useDashboard = () => {
     try {
       const startDate = new Date()
       startDate.setDate(startDate.getDate() - 7)
-      startDate.setHours(0, 0, 0, 0)
 
-      const [ordersRes, productsRes] = await Promise.all([
-        $supabase.from('orders').select('*').gte('created_at', startDate.toISOString()).order('created_at', { ascending: false }),
-        $supabase.from('products').select('stock, name')
+      // ดึงข้อมูลพร้อมกันเพื่อลด Latency
+      const [rpcRes, ordersRes, itemsRes] = await Promise.all([
+        $supabase.rpc('get_dashboard_summary', { start_date_input: startDate.toISOString() }),
+        $supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(10),
+        $supabase.from('order_items').select('product_name, price, quantity')
       ])
 
-      if (ordersRes.error) throw ordersRes.error
-      const allOrders = ordersRes.data || []
+      if (rpcRes.error || ordersRes.error || itemsRes.error) throw new Error('Data fetch failed')
 
-      // --- จัดการข้อมูลสถิติ ---
-      const todayStr = new Date().toISOString().split('T')[0] // ได้ค่า YYYY-MM-DD
-      
-      const paidOrders = allOrders.filter(o => 
-        o.payment_status === 'paid' || o.payment_status === 'ชำระเงินแล้ว'
-      )
-      
-      // คำนวณยอดขายวันนี้ (เช็คจากวันที่สร้าง)
-      const totalSales = paidOrders
-        .filter(o => o.created_at.startsWith(todayStr))
-        .reduce((sum, o) => sum + (Number(o.total) || 0), 0)
-
-      // --- เตรียมข้อมูลกราฟ (จุดสำคัญที่ทำให้กราฟไม่ขึ้น) ---
-      const salesMap = new Map()
-      const last7DaysLabels: string[] = []
-
-      // สร้าง Label รอไว้ 7 วัน (ย้อนกลับจากวันนี้)
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date()
-        d.setDate(d.getDate() - i)
-        // ใช้ Key เป็น YYYY-MM-DD เพื่อให้เปรียบเทียบกับ DB ได้แม่นยำ
-        const key = d.toISOString().split('T')[0] 
-        // ใช้ Label เป็นวันที่แบบไทยแสดงบนกราฟ
-        const label = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
-        
-        salesMap.set(key, { label, value: 0 })
-        last7DaysLabels.push(key)
-      }
-
-      // นำออเดอร์ที่จ่ายแล้วมาบวกลงใน Map
-      paidOrders.forEach(o => {
-        const orderDateKey = o.created_at.split('T')[0] // ตัดเอาแค่ YYYY-MM-DD จาก 2024-01-28T...
-        if (salesMap.has(orderDateKey)) {
-          const current = salesMap.get(orderDateKey)
-          salesMap.set(orderDateKey, { ...current, value: current.value + (Number(o.total) || 0) })
-        }
+      // คำนวณสินค้าขายดีจาก order_items
+      const productMap: Record<string, number> = {}
+      itemsRes.data?.forEach(item => {
+        const total = Number(item.price || 0) * (item.quantity || 0)
+        productMap[item.product_name] = (productMap[item.product_name] || 0) + total
       })
 
-      // แปลงข้อมูลกลับเป็น Array เพื่อส่งให้ Chart.js
-      const chartLabels = last7DaysLabels.map(key => salesMap.get(key).label)
-      const chartValues = last7DaysLabels.map(key => salesMap.get(key).value)
+      const sorted = Object.entries(productMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
 
       return {
         data: {
-          recentOrders: allOrders.slice(0, 10),
+          recentOrders: ordersRes.data || [],
           stats: {
-            totalSales,
-            newOrdersCount: allOrders.filter(o => o.created_at.startsWith(todayStr)).length,
-            newCustomersCount: new Set(allOrders.map(o => o.customer_id)).size,
-            totalStock: productsRes.data?.reduce((sum, p) => sum + (p.stock || 0), 0) || 0,
-            lowStockCount: productsRes.data?.filter(p => (p.stock || 0) < 10).length || 0
+            totalSales: rpcRes.data?.total_sales_today ?? 0,
+            newOrdersCount: rpcRes.data?.new_orders_count ?? 0,
+            newCustomersCount: rpcRes.data?.new_customers_count ?? 0,
+            totalStock: rpcRes.data?.total_stock ?? 0,
+            lowStockCount: rpcRes.data?.low_stock_count ?? 0,
           },
           chartData: {
-            dates: chartLabels,
-            sales: chartValues
+            dates: rpcRes.data?.sales_chart_data?.map((d: any) => d.label) || [],
+            sales: rpcRes.data?.sales_chart_data?.map((d: any) => d.value) || []
           },
           topProducts: {
-            names: ['สินค้า A', 'สินค้า B', 'สินค้า C'], 
-            sales: [1200, 900, 600]
+            names: sorted.map(p => p[0]),
+            sales: sorted.map(p => p[1])
           }
         },
         error: null
       }
-      
     } catch (error) {
-      console.error('Dashboard Error:', error)
+      console.error('Service Error:', error)
       return { data: null, error }
     }
   }
-
   return { getAllDashboardData }
 }

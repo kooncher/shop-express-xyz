@@ -1,131 +1,54 @@
 <template>
   <div class="dashboard-container">
-    <!-- Mobile Menu Button -->
-    <button 
-      @click="toggleMobileSidebar" 
-      class="mobile-menu-btn"
-    >
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
+    <div v-if="showMobileSidebar" class="mobile-overlay" @click="closeMobileSidebar"></div>
 
-    <!-- Mobile Overlay -->
-    <div 
-      v-if="showMobileSidebar" 
-      class="mobile-overlay"
-      @click="closeMobileSidebar"
-    ></div>
+    <button @click="toggleMobileSidebar" class="mobile-menu-btn">
+      <span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span>
+    </button>
 
     <Sidebar
       :menu-items="menuItems"
       :user="userData"
       :is-mobile-open="showMobileSidebar"
-      @item-click="handleMenuClick"
+      :is-collapsed="isSidebarCollapsed"
       @toggle="handleToggle"
       @close-mobile="closeMobileSidebar"
     />
 
     <main class="main-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <div class="content-wrapper">
-        <!-- Header -->
         <div class="page-header">
           <div class="header-text">
             <h1 class="page-title">{{ currentPage }}</h1>
-            <p class="page-subtitle">ยินดีต้อนรับกลับมา, {{ user?.profile?.full_name || 'ผู้ใช้งาน' }}!</p>
+            <p class="page-subtitle">ยินดีต้อนรับกลับมา, {{ user?.profile?.full_name ?? 'ผู้ใช้งาน' }}!</p>
           </div>
-          
-          <button @click="handleLogout" class="logout-btn">
-            <span class="logout-icon">🚪</span>
-            <span class="logout-text">ออกจากระบบ</span>
-          </button>
+          <button @click="handleLogout" class="logout-btn">🚪 ออกจากระบบ</button>
         </div>
 
-        <!-- Loading State -->
-        <div v-if="loading" class="loading-container">
-          <div class="spinner"></div>
-          <p>กำลังโหลดข้อมูล...</p>
+        <div v-if="loading" class="stats-grid">
+          <div v-for="i in 4" :key="i" class="stat-card skeleton-pulse" style="height: 120px;"></div>
         </div>
-
-        <!-- Stats Cards -->
         <div v-else class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-content">
-              <div class="stat-info">
-                <p class="stat-label">ยอดขายวันนี้</p>
-                <p class="stat-value">฿{{ dashboardData.stats.totalSales.toLocaleString() }}</p>
-                <p class="stat-change positive">จากคำสั่งซื้อที่ชำระแล้ว</p>
-              </div>
-              <div class="stat-icon blue">
-                <span>💰</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <div class="stat-info">
-                <p class="stat-label">คำสั่งซื้อใหม่</p>
-                <p class="stat-value">{{ dashboardData.stats.newOrdersCount }}</p>
-                <p class="stat-change positive">วันนี้</p>
-              </div>
-              <div class="stat-icon green">
-                <span>📦</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <div class="stat-info">
-                <p class="stat-label">ลูกค้าใหม่</p>
-                <p class="stat-value">{{ dashboardData.stats.newCustomersCount }}</p>
-                <p class="stat-change neutral">สัปดาห์นี้</p>
-              </div>
-              <div class="stat-icon purple">
-                <span>👥</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <div class="stat-info">
-                <p class="stat-label">สินค้าคงเหลือ</p>
-                <p class="stat-value">{{ dashboardData.stats.totalStock.toLocaleString() }}</p>
-                <p class="stat-change warning">{{ dashboardData.stats.lowStockCount }} รายการใกล้หมด</p>
-              </div>
-              <div class="stat-icon orange">
-                <span>📊</span>
-              </div>
-            </div>
+          <div v-for="(val, label) in statsData" :key="label" class="stat-card">
+            <p class="stat-label">{{ label }}</p>
+            <p class="stat-value">{{ val }}</p>
           </div>
         </div>
 
-        <!-- Charts Section -->
-        <div v-if="!loading" class="charts-grid">
+        <div class="charts-grid">
           <div class="card chart-card">
             <h2 class="card-title">ยอดขาย 7 วันล่าสุด</h2>
-            <div class="chart-container">
-              <canvas ref="salesChart"></canvas>
-            </div>
+            <Barchart v-if="!loading" :config="salesChartConfig" />
           </div>
-
           <div class="card chart-card">
             <h2 class="card-title">สินค้าขายดี Top 5</h2>
-            <div class="chart-container">
-              <canvas ref="topProductsChart"></canvas>
-            </div>
+            <Barchart v-if="!loading" :config="barChartConfig" />
           </div>
         </div>
 
-        <!-- Recent Orders -->
-        <div v-if="!loading" class="card orders-card">
+        <div class="card orders-card" v-if="!loading">
           <h2 class="card-title">คำสั่งซื้อล่าสุด</h2>
-          <div v-if="dashboardData.recentOrders.length === 0" class="empty-state">
-            <p>ยังไม่มีคำสั่งซื้อ</p>
-          </div>
-          <div v-else class="table-container">
+          <div class="table-container">
             <table class="data-table">
               <thead>
                 <tr>
@@ -137,22 +60,16 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="order in dashboardData.recentOrders" :key="order.id">
-                  <td class="font-semibold">
-                    <div class="order-number">{{ order.order_number }}</div>
-                    <div class="mobile-only mobile-date">{{ formatDate(order.created_at) }}</div>
-                  </td>
-                  <td>
-                    <div>{{ order.customer_name }}</div>
-                    <div class="mobile-only mobile-price">฿{{ parseFloat(order.total).toLocaleString() }}</div>
-                  </td>
-                  <td class="font-semibold hide-mobile">฿{{ parseFloat(order.total).toLocaleString() }}</td>
+                <tr v-for="order in dashboardData?.recentOrders" :key="order.id">
+                  <td class="font-semibold">{{ order.order_number }}</td>
+                  <td>{{ order.customer_name }}</td>
+                  <td class="hide-mobile">฿{{ order.total?.toLocaleString() }}</td>
                   <td>
                     <span :class="['badge', getStatusClass(order.payment_status)]">
                       {{ getStatusLabel(order.payment_status) }}
                     </span>
                   </td>
-                  <td class="text-muted hide-mobile">{{ formatDate(order.created_at) }}</td>
+                  <td class="hide-mobile">{{ formatDate(order.created_at) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -163,740 +80,138 @@
   </div>
 </template>
 
-
-
 <script setup lang="ts">
-import Chart from 'chart.js/auto'
+// --- Imports ---
+import Barchart from '../components/Globalcomponents/Barchart.vue'
 
 const { user, signOut } = useAuth()
 const { getAllDashboardData } = useDashboard()
 
-const currentPage = ref('หน้าแรก')
+// --- State ---
+const loading = ref(true)
+const dashboardData = ref<any>(null)
 const isSidebarCollapsed = ref(false)
 const showMobileSidebar = ref(false)
-const loading = ref(true)
+const currentPage = ref('หน้าแรก')
 
-// --- เพิ่มตัวแปรเก็บ Instance เพื่อใช้ทำลายกราฟเก่าก่อนวาดใหม่ ---
-let salesChartInstance: Chart | null = null
-let topProductsChartInstance: Chart | null = null
+// --- Computed Props (Professional Way) ---
+const statsData = computed(() => ({
+  'ยอดขายวันนี้': '฿' + (dashboardData.value?.stats?.totalSales?.toLocaleString() ?? 0),
+  'คำสั่งซื้อใหม่': dashboardData.value?.stats?.newOrdersCount ?? 0,
+  'ลูกค้าใหม่': dashboardData.value?.stats?.newCustomersCount ?? 0,
+  'สินค้าคงเหลือ': dashboardData.value?.stats?.totalStock?.toLocaleString() ?? 0
+}))
 
-// ข้อมูล Dashboard
-const dashboardData = ref({
-  recentOrders: [] as any[],
-  stats: {
-    totalSales: 0,
-    newOrdersCount: 0,
-    newCustomersCount: 0,
-    totalStock: 0,
-    lowStockCount: 0
+const salesChartConfig = computed(() => ({
+  type: 'line' as const,
+  // --- เพิ่มส่วนนี้เข้าไปครับ ---
+  data: {
+    labels: dashboardData.value?.chartData?.dates || [],
+    datasets: [{
+      label: 'ยอดขาย',
+      data: dashboardData.value?.chartData?.sales || [],
+      borderColor: '#6366f1',
+      backgroundColor: 'rgba(99, 102, 241, 0.1)',
+      fill: true,
+      tension: 0.4
+    }]
   },
-  chartData: {
-    dates: [] as string[],
-    sales: [] as number[]
-  },
-  topProducts: {
-    names: [] as string[],
-    sales: [] as number[]
+  // -------------------------
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (context: any) => `ยอดขาย: ฿${context.raw.toLocaleString()}`
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true, // เพิ่มตัวนี้เพื่อให้แกน Y เริ่มที่ 0 เสมอ
+        ticks: {
+          callback: (value: any) => '฿' + value.toLocaleString()
+        }
+      }
+    }
   }
-})
+}))
+const barChartConfig = computed(() => ({
+  type: 'bar' as const,
+  data: {
+    labels: dashboardData.value?.topProducts?.names || [],
+    datasets: [{
+      label: 'ยอดขายรายสินค้า',
+      data: dashboardData.value?.topProducts?.sales || [],
+      backgroundColor: '#818cf8',
+      borderRadius: 8
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false }
+}))
 
-const salesChart = ref<HTMLCanvasElement | null>(null)
-const topProductsChart = ref<HTMLCanvasElement | null>(null)
+const userData = computed(() => ({
+  name: user.value?.profile?.full_name ?? 'ผู้ใช้งาน',
+  email: user.value?.email ?? '',
+  avatar: '👤'
+}))
 
-const menuItems = ref([
+// --- Actions ---
+const loadData = async () => {
+  loading.value = true
+  try {
+    const { data } = await getAllDashboardData()
+    dashboardData.value = data
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadData)
+
+// --- Helpers ---
+const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }) : '-'
+const getStatusLabel = (s: string) => ({ pending: 'รอชำระ', paid: 'ชำระแล้ว', completed: 'สำเร็จ' }[s] || s)
+const getStatusClass = (s: string) => (s === 'paid' || s === 'completed' || s === 'ชำระแล้ว') ? 'success' : 'warning'
+const handleToggle = (val: boolean) => isSidebarCollapsed.value = val
+const toggleMobileSidebar = () => showMobileSidebar.value = !showMobileSidebar.value
+const closeMobileSidebar = () => showMobileSidebar.value = false
+const handleLogout = () => signOut()
+
+const menuItems = [
   { id: 'home', label: 'หน้าแรก', icon: '🏠' },
   { id: 'products', label: 'สินค้า', icon: '📦' },
   { id: 'orders', label: 'คำสั่งซื้อ', icon: '📋' },
   { id: 'customers', label: 'ลูกค้า', icon: '👥' },
   { id: 'reports', label: 'รายงาน', icon: '📊' },
   { id: 'settings', label: 'ตั้งค่า', icon: '⚙️' }
-])
-
-const userData = computed(() => ({
-  name: user.value?.profile?.full_name || 'ผู้ใช้งาน',
-  email: user.value?.email || '',
-  avatar: '👤'
-}))
-
-// Mobile Sidebar Controls
-const toggleMobileSidebar = () => {
-  showMobileSidebar.value = !showMobileSidebar.value
-}
-
-const closeMobileSidebar = () => {
-  showMobileSidebar.value = false
-}
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('th-TH', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
-  })
-}
-
-// ปรับปรุงสถานะให้รองรับข้อมูลที่คุณแก้ไขล่าสุด
-const getStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
-    'pending': 'รอชำระ',
-    'paid': 'ชำระเงินแล้ว',
-    'ชำระเงินแล้ว': 'ชำระเงินแล้ว',
-    'processing': 'กำลังดำเนินการ',
-    'shipping': 'กำลังจัดส่ง',
-    'completed': 'สำเร็จ',
-    'cancelled': 'ยกเลิก'
-  }
-  return labels[status] || status
-}
-const getStatusClass = (status: string) => {
-  if (status === 'paid' || status === 'ชำระเงินแล้ว' || status === 'completed') return 'success'
-  if (status === 'pending') return 'warning'
-  return 'default'
-}
-
-// --- แก้ไขฟังก์ชันสร้างกราฟให้เสถียรขึ้น ---
-const renderCharts = () => {
-  // 1. กราฟยอดขาย (Line Chart)
-  if (salesChart.value && dashboardData.value.chartData.dates.length > 0) {
-    const ctx = salesChart.value.getContext('2d')
-    if (ctx) {
-      // ลบกราฟเดิมทิ้งก่อนวาดใหม่ (กันบั๊กวาดทับกัน)
-      if (salesChartInstance) salesChartInstance.destroy()
-      
-      const gradient = ctx.createLinearGradient(0, 0, 0, 300)
-      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.3)')
-      gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)')
-      
-      salesChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: dashboardData.value.chartData.dates,
-          datasets: [{
-            label: 'ยอดขาย (฿)',
-            data: dashboardData.value.chartData.sales,
-            borderColor: 'rgb(99, 102, 241)',
-            backgroundColor: gradient,
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { callback: (val) => '฿' + val.toLocaleString() }
-            }
-          }
-        }
-      })
-    }
-  }
-
-  // 2. กราฟสินค้าขายดี (Bar Chart)
-  if (topProductsChart.value) {
-    const ctx2 = topProductsChart.value.getContext('2d')
-    if (ctx2) {
-      if (topProductsChartInstance) topProductsChartInstance.destroy()
-      
-      topProductsChartInstance = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-          labels: dashboardData.value.topProducts.names.length > 0 ? dashboardData.value.topProducts.names : ['ไม่มีข้อมูล'],
-          datasets: [{
-            label: 'ยอดขาย (฿)',
-            data: dashboardData.value.topProducts.sales.length > 0 ? dashboardData.value.topProducts.sales : [0],
-            backgroundColor: 'rgba(99, 102, 241, 0.8)',
-            borderRadius: 8
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } }
-        }
-      })
-    }
-  }
-}
-
-const loadDashboardData = async () => {
-  loading.value = true
-  try {
-    const { data, error } = await getAllDashboardData()
-    if (error) throw error
-    
-    if (data) {
-      dashboardData.value = data
-      // สำคัญ: ต้องรอให้ Vue เรนเดอร์ Canvas เสร็จก่อนเรียกใช้ Chart.js
-      await nextTick()
-      renderCharts()
-    }
-  } catch (error) {
-    console.error('Error loading dashboard:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleMenuClick = (item: any) => {
-  currentPage.value = item.label
-  closeMobileSidebar()
-  navigateTo(`/${item.id === 'home' ? 'dashboard' : item.id}`)
-}
-
-const handleToggle = (isCollapsed: boolean) => {
-  isSidebarCollapsed.value = isCollapsed
-}
-
-const handleLogout = async () => {
-  await signOut()
-}
-
-onMounted(() => {
-  loadDashboardData()
-})
-
-// ล้าง Instance เมื่อออกจากหน้าจอเพื่อประหยัด RAM
-onUnmounted(() => {
-  if (salesChartInstance) salesChartInstance.destroy()
-  if (topProductsChartInstance) topProductsChartInstance.destroy()
-})
+]
 </script>
+
 <style scoped>
-/* Base Styles */
-.dashboard-container {
-  min-height: 100vh;
-  background: #f9fafb;
-  position: relative;
-}
-
-/* Mobile Menu Button */
-.mobile-menu-btn {
-  display: none;
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 1100;
-  width: 48px;
-  height: 48px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  cursor: pointer;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s;
-}
-
-.mobile-menu-btn:hover {
-  background: #f9fafb;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  transform: scale(1.05);
-}
-
-.mobile-menu-btn:active {
-  transform: scale(0.95);
-}
-
-.hamburger-line {
-  width: 24px;
-  height: 2.5px;
-  background: #1e293b;
-  border-radius: 2px;
-}
-
-/* Mobile Overlay */
-.mobile-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.main-content {
-  margin-left: 300px;
-  min-height: 100vh;
-  transition: margin-left 0.3s ease;
-  display: flex;
-  justify-content: center;
-}
-
-.main-content.sidebar-collapsed {
-  margin-left: 80px;
-}
-
-.content-wrapper {
-  padding: 2rem;
-  max-width: 1400px;
-  width: 100%;
-}
-
-/* Header */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.header-text {
-  flex: 1;
-  min-width: 200px;
-}
-
-.page-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 0.25rem;
-}
-
-.page-subtitle {
-  color: #6b7280;
-  font-size: 0.95rem;
-}
-
-.logout-btn {
-  padding: 0.625rem 1.5rem;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-}
-
-.logout-btn:hover {
-  background: #dc2626;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.logout-icon {
-  font-size: 1.1rem;
-}
-
-/* Loading */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 4rem;
-  gap: 1rem;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f4f6;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f3f4f6;
-  transition: all 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.stat-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
-}
-
-.stat-value {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 0.25rem;
-}
-
-.stat-change {
-  font-size: 0.875rem;
-}
-
-.stat-change.positive {
-  color: #10b981;
-}
-
-.stat-change.warning {
-  color: #f59e0b;
-}
-
-.stat-change.neutral {
-  color: #3b82f6;
-}
-
-.stat-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.75rem;
-  flex-shrink: 0;
-}
-
-.stat-icon.blue {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-}
-
-.stat-icon.green {
-  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-}
-
-.stat-icon.purple {
-  background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
-}
-
-.stat-icon.orange {
-  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
-}
-
-/* Charts */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.card {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f3f4f6;
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 1.25rem;
-}
-
-.chart-container {
-  height: 300px;
-  position: relative;
-}
-
-/* Table */
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #6b7280;
-}
-
-.table-container {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-.data-table thead tr {
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.data-table th {
-  text-align: left;
-  padding: 0.875rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
-  white-space: nowrap;
-}
-
-.data-table tbody tr {
-  border-bottom: 1px solid #f3f4f6;
-  transition: background 0.2s;
-}
-
-.data-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.data-table td {
-  padding: 1rem;
-  font-size: 0.9rem;
-  color: #111827;
-}
-
-.font-semibold {
-  font-weight: 600;
-}
-
-.text-muted {
-  color: #6b7280;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.375rem 0.875rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.badge.success {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge.warning {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.badge.info {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.badge.default {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-/* Mobile-specific elements */
-.mobile-only {
-  display: none;
-}
-
-.mobile-date,
-.mobile-price {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-}
-
-/* Responsive Breakpoints */
-
-/* Tablet (768px - 1024px) */
-@media (max-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Mobile Large (481px - 768px) */
-@media (max-width: 768px) {
-  /* แสดงปุ่ม Mobile Menu */
-  .mobile-menu-btn {
-    display: flex !important;
-  }
-  
-  /* ลบ margin ของ main content */
-  .main-content {
-    margin-left: 0 !important;
-  }
-  
-  .main-content.sidebar-collapsed {
-    margin-left: 0 !important;
-  }
-  
-  .content-wrapper {
-    padding: 1rem;
-    padding-top: 5rem;
-  }
-  
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .page-title {
-    font-size: 1.5rem;
-  }
-  
-  .page-subtitle {
-    font-size: 0.875rem;
-  }
-  
-  .logout-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .stat-card {
-    padding: 1.25rem;
-  }
-  
-  .stat-value {
-    font-size: 1.5rem;
-  }
-  
-  .stat-icon {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.5rem;
-  }
-  
-  .charts-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .chart-container {
-    height: 250px;
-  }
-  
-  .card {
-    padding: 1rem;
-  }
-  
-  .card-title {
-    font-size: 1.125rem;
-  }
-  
-  /* Table responsive */
-  .hide-mobile {
-    display: none;
-  }
-  
-  .mobile-only {
-    display: block;
-  }
-  
-  .data-table {
-    min-width: 100%;
-  }
-  
-  .data-table th,
-  .data-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.875rem;
-  }
-  
-  .order-number {
-    font-weight: 600;
-  }
-}
-
-/* Mobile Small (max 480px) */
-@media (max-width: 480px) {
-  .content-wrapper {
-    padding: 0.75rem;
-    padding-top: 4.5rem;
-  }
-  
-  .page-title {
-    font-size: 1.25rem;
-  }
-  
-  .stat-card {
-    padding: 1rem;
-  }
-  
-  .stat-value {
-    font-size: 1.375rem;
-  }
-  
-  .stat-label,
-  .stat-change {
-    font-size: 0.8rem;
-  }
-  
-  .chart-container {
-    height: 200px;
-  }
-  
-  .logout-text {
-    display: none;
-  }
-  
-  .logout-btn {
-    padding: 0.625rem 1rem;
-    width: auto;
-  }
-  
-  .badge {
-    padding: 0.25rem 0.625rem;
-    font-size: 0.7rem;
-  }
-}
-
-/* Landscape Mobile */
-@media (max-width: 768px) and (orientation: landscape) {
-  .chart-container {
-    height: 200px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+/* เก็บ CSS เดิมของคุณไว้ได้เลย เพราะมันจัดการ Layout ได้ดีอยู่แล้ว */
+.dashboard-container { display: flex; min-height: 100vh; background: #f8fafc; }
+.main-content { flex: 1; margin-left: 280px; transition: margin 0.3s ease; min-width: 0; }
+.main-content.sidebar-collapsed { margin-left: 80px; }
+.content-wrapper { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.logout-btn { padding: 0.6rem 1.2rem; background: #ef4444; color: white; border-radius: 0.5rem; border: none; cursor: pointer; white-space: nowrap; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.stat-card { background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; }
+.stat-value { font-size: 1.75rem; font-weight: 800; color: #0f172a; }
+.charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+.chart-card { background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; height: 450px; display: flex; flex-direction: column; }
+.orders-card { background: white; padding: 1.5rem; border-radius: 1rem; border: 1px solid #e2e8f0; margin-top: 1.5rem; }
+.table-container { overflow-x: auto; margin-top: 1rem; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { padding: 1rem; text-align: left; color: #64748b; border-bottom: 2px solid #f1f5f9; font-size: 0.875rem; }
+.data-table td { padding: 1.25rem 1rem; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+.badge { padding: 0.35rem 0.85rem; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
+.badge.success { background: #dcfce7; color: #166534; }
+.badge.warning { background: #fef3c7; color: #92400e; }
+.font-semibold { font-weight: 600; }
+.skeleton-pulse { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@media (max-width: 1024px) { .charts-grid { grid-template-columns: 1fr; } .main-content { margin-left: 0 !important; } }
 </style>

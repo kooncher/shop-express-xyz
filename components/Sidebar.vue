@@ -18,10 +18,10 @@
 
     <!-- User Section (at top) -->
     <div class="user-section" @click="toggleUserMenu">
-      <div class="user-avatar">{{ user.avatar }}</div>
+      <div class="user-avatar">{{ user?.avatar }}</div>
       <div class="user-info" v-if="!isCollapsed">
-        <p class="user-name">{{ user.name }}</p>
-        <p class="user-email">{{ user.email }}</p>
+        <p class="user-name">{{ user?.name }}</p>
+        <p class="user-email">{{ user?.email }}</p>
       </div>
     </div>
 

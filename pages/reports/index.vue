@@ -17,6 +17,11 @@
           </div>
           
           <div class="date-filter">
+
+          <button @click="exportToExcel" class="btn-export" :disabled="loading">
+    <span>📊</span>
+    <span>ส่งออก Excel</span>
+  </button>
             <button @click="loadData" class="btn-refresh">
               <span>🔄</span>
               <span>รีเฟรช</span>
@@ -302,7 +307,51 @@ const loadData = async () => {
     loading.value = false
   }
 }
+import * as XLSX from 'xlsx'
 
+const exportToExcel = () => {
+  const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  // ใช้ 'en-GB' จะได้ dd/mm/yyyy
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })
+}
+  if (recentOrders.value.length === 0) {
+    alert('ไม่มีข้อมูลสำหรับส่งออก')
+    return
+  }
+
+  // 1. เตรียมข้อมูล (เรียกใช้ formatDate ที่เราแก้แล้ว)
+  const data = recentOrders.value.map(order => ({
+    'เลขที่คำสั่งซื้อ': order.order_number,
+    'ชื่อลูกค้า': order.customer_name,
+    'ยอดรวม (บาท)': order.total,
+    'สถานะ': getStatusLabel(order.status),
+    'วันที่สั่งซื้อ': formatDate(order.created_at) // จะได้ dd/mm/yyyy
+  }))
+
+  const worksheet = XLSX.utils.json_to_sheet(data)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'คำสั่งซื้อ')
+
+  const wscols = [
+    { wch: 20 }, // เลขที่
+    { wch: 30 }, // ชื่อลูกค้า
+    { wch: 15 }, // ยอดรวม
+    { wch: 20 }, // สถานะ
+    { wch: 15 }  // วันที่
+  ]
+  worksheet['!cols'] = wscols
+
+  // 2. ปรับชื่อไฟล์ให้เป็น วัน-เดือน-ปี แบบไทย
+  const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') 
+  // ผลลัพธ์จะเป็น "31-01-2024"
+  
+  XLSX.writeFile(workbook, `สรุปยอดขาย_${today}.xlsx`)
+}
 // Helper functions
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('th-TH', {
@@ -881,5 +930,28 @@ onMounted(() => {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+}
+.btn-export {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #10b981; /* สีเขียวสไตล์ Excel */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-export:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.btn-export:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

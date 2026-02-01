@@ -109,16 +109,30 @@
           <div v-else class="table-container">
             <table class="data-table">
               <thead>
-                <tr>
-                  <th>เลขที่</th>
-                  <th>ลูกค้า</th>
-                  <th>เบอร์โทร</th>
-                  <th>ยอดรวม</th>
-                  <th>สถานะ</th>
-                  <th>การชำระเงิน</th>
-                  <th>วันที่สั่ง</th>
-                  <th>จัดการ</th>
-                </tr>
+                <tr v-for="order in orders" :key="order.id">
+  <td data-label="เลขที่" class="font-semibold">{{ order.order_number }}</td>
+  <td data-label="ลูกค้า">{{ order.customer_name }}</td>
+  <td data-label="เบอร์โทร" class="text-muted">{{ order.customer_phone || '-' }}</td>
+  <td data-label="ยอดรวม" class="font-semibold">฿{{ formatNumber(order.total) }}</td>
+  <td data-label="สถานะ">
+    <span :class="['badge', getStatusClass(order.status)]">
+      {{ getStatusLabel(order.status) }}
+    </span>
+  </td>
+  <td data-label="การชำระเงิน">
+    <span :class="['badge', getPaymentStatusClass(order.payment_status)]">
+      {{ getPaymentStatusLabel(order.payment_status) }}
+    </span>
+  </td>
+  <td data-label="วันที่สั่ง" class="text-muted">{{ formatDate(order.created_at) }}</td>
+  <td data-label="จัดการ">
+    <div class="action-buttons">
+      <button @click="viewOrder(order)" class="btn-icon btn-view">👁️</button>
+      <button @click="openEditModal(order)" class="btn-icon btn-edit">✏️</button>
+      <button @click="confirmDelete(order)" class="btn-icon btn-delete">🗑️</button>
+    </div>
+  </td>
+</tr>
               </thead>
               <tbody>
                 <tr v-for="order in orders" :key="order.id">
@@ -798,6 +812,113 @@ onMounted(async () => {
   
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 1024px) {
+  /* ซ่อนหัวตาราง */
+  .data-table thead {
+    display: none;
+  }
+
+  /* ปรับแถวตารางให้กลายเป็นแผ่นการ์ด */
+  .data-table tr {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  /* จัดการช่องข้อมูล (Label อยู่ซ้าย ข้อมูลอยู่ขวา) */
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    width: 100%;
+    text-align: right;
+  }
+
+  /* ใส่หัวข้อกำกับจาก data-label */
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+
+  /* ปรับแต่งช่อง "เลขที่คำสั่งซื้อ" ให้เด่นเป็นพิเศษ */
+  .data-table td[data-label="เลขที่"] {
+    background: #f8fafc;
+    margin: -1rem -1rem 0.5rem -1rem;
+    padding: 1rem;
+    border-radius: 1rem 1rem 0 0;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  /* ช่อง "จัดการ" ไม่ต้องมีเส้นคั่น */
+  .data-table td[data-label="จัดการ"] {
+    border-bottom: none;
+    padding-top: 1rem;
+    justify-content: center; /* ปุ่มกดอยู่ตรงกลางเพื่อให้กดง่าย */
+  }
+
+  .data-table td[data-label="จัดการ"]::before {
+    display: none;
+  }
+
+  .action-buttons {
+    width: 100%;
+    justify-content: space-around;
+    gap: 1rem;
+  }
+
+  .btn-icon {
+    flex: 1; /* ขยายปุ่มให้ใหญ่ขึ้นในมือถือ กดง่ายกว่า */
+    height: 44px;
+  }
+}
+
+/* ปรับปรุงส่วน Header และ Stats ในมือถือ */
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 1rem;
+    padding-top: 5rem; /* เผื่อพื้นที่ให้ปุ่ม Hamburger */
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr 1fr; /* สถิติโชว์แบบ 2 คอลัมน์คู่กันดูสวยกว่า */
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
   }
 }
 </style>

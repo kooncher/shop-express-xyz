@@ -4,17 +4,19 @@
     'mobile-open': isMobileOpen 
   }">
     <!-- Header -->
+   
+
     <div class="sidebar-header">
-       <div class="brand" v-if="!isCollapsed">
-        <span class="brand-icon">🏪</span>
-        <span class="brand-name">{{ shopName }}</span>
-      </div>
-      <button @click="toggleSidebar" class="menu-toggle">
-        <span class="hamburger"></span>
-        <span class="hamburger"></span>
-        <span class="hamburger"></span>
-      </button>
-    </div>
+  <div class="brand" v-if="!isCollapsed || isMobile">
+    <span class="brand-icon">🏪</span>
+    <span class="brand-name">{{ shopName }}</span>
+  </div>
+  <button @click="toggleSidebar" class="menu-toggle">
+    <span class="hamburger" :class="{ 'rotate-45': isMobileOpen }"></span>
+    <span class="hamburger" v-if="!isMobileOpen"></span>
+    <span class="hamburger" :class="{ '-rotate-45': isMobileOpen }"></span>
+  </button>
+</div>
 
     <!-- User Section (at top) -->
     <div class="user-section" @click="toggleUserMenu">
@@ -471,4 +473,17 @@ onMounted(() => {
     transform: translateX(0);
   }
 }
+@media (max-width: 768px) {
+  /* ซ่อนปุ่ม Hamburger เดิมที่อยู่ในแถบ Sidebar เมื่อดูผ่านมือถือ */
+  .sidebar-header .menu-toggle {
+    display: none;
+  }
+  
+  /* ปรับให้ Logo ชิดซ้ายสวยงาม */
+  .sidebar-header {
+    justify-content: flex-start;
+  }
+}
+
+
 </style>

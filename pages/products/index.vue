@@ -1,14 +1,7 @@
 <template>
   <div class="dashboard-container">
     <!-- Mobile Menu Button -->
-    <button 
-      @click="toggleMobileSidebar" 
-      class="mobile-menu-btn"
-    >
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-      <span class="hamburger-line"></span>
-    </button>
+
 
     <!-- Mobile Overlay -->
     <div 
@@ -125,42 +118,38 @@
                   <th>จัดการ</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr v-for="product in products" :key="product.id">
-                  <td>
-                    <div class="product-image">
-                      <img v-if="product.image_url" :src="product.image_url" :alt="product.name" />
-                      <span v-else class="no-image">📦</span>
-                    </div>
-                  </td>
-                  <td class="font-semibold">{{ product.name }}</td>
-                  <td class="text-muted">{{ product.sku || '-' }}</td>
-                  <td>
-                    <span class="category-badge">{{ getCategoryName(product.category_id) }}</span>
-                  </td>
-                  <td class="font-semibold">฿{{ formatNumber(product.price) }}</td>
-                  <td>
-                    <span :class="['stock-badge', getStockStatus(product.stock, product.min_stock)]">
-                      {{ product.stock }}
-                    </span>
-                  </td>
-                  <td>
-                    <span :class="['badge', product.is_active ? 'success' : 'danger']">
-                      {{ product.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="action-buttons">
-                      <button @click="openEditModal(product)" class="btn-icon btn-edit" title="แก้ไข">
-                        ✏️
-                      </button>
-                      <button @click="confirmDelete(product)" class="btn-icon btn-delete" title="ลบ">
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+     <tbody>
+  <tr v-for="product in products" :key="product.id">
+    <td data-label="รูปภาพ">
+      <div class="product-image">
+        <img v-if="product.image_url" :src="product.image_url" :alt="product.name" />
+        <span v-else class="no-image">📦</span>
+      </div>
+    </td>
+    <td data-label="ชื่อสินค้า" class="font-semibold">{{ product.name }}</td>
+    <td data-label="SKU" class="text-muted">{{ product.sku || '-' }}</td>
+    <td data-label="หมวดหมู่">
+      <span class="category-badge">{{ getCategoryName(product.category_id) }}</span>
+    </td>
+    <td data-label="ราคา" class="font-semibold">฿{{ formatNumber(product.price) }}</td>
+    <td data-label="สต็อก">
+      <span :class="['stock-badge', getStockStatus(product.stock, product.min_stock)]">
+        {{ product.stock }}
+      </span>
+    </td>
+    <td data-label="สถานะ">
+      <span :class="['badge', product.is_active ? 'success' : 'danger']">
+        {{ product.is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
+      </span>
+    </td>
+    <td data-label="จัดการ">
+      <div class="action-buttons">
+        <button @click="openEditModal(product)" class="btn-icon btn-edit">✏️</button>
+        <button @click="confirmDelete(product)" class="btn-icon btn-delete">🗑️</button>
+      </div>
+    </td>
+  </tr>
+</tbody>
             </table>
           </div>
         </div>
@@ -921,6 +910,52 @@ onMounted(async () => {
   
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Products.vue <style scoped> */
+
+@media (max-width: 640px) {
+  /* ซ่อน Header ของตารางทิ้งไปเลย */
+  .data-table thead {
+    display: none;
+  }
+
+  /* ปรับแต่ละแถว (tr) ให้กลายเป็น Card */
+  .data-table tr {
+    display: block;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  /* จัดการแต่ละช่อง (td) ให้เรียงเป็นบรรทัด */
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: none;
+    padding: 0.5rem 0;
+    text-align: right;
+  }
+
+  /* ใส่ Label ให้แต่ละช่องโดยใช้ pseudo-element (เทคนิค Senior!) */
+  .data-table td::before {
+    content: attr(data-label); /* ต้องไปเพิ่ม attribute นี้ใน HTML ด้วย */
+    font-weight: 600;
+    color: #64748b;
+    float: left;
+    margin-right: 1rem;
+  }
+
+  /* ปรับรูปสินค้าให้ใหญ่ขึ้นในโหมด Card */
+  .product-img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 0.5rem;
   }
 }
 </style>

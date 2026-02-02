@@ -129,24 +129,24 @@ const statsData = computed(() => ({
   สินค้าคงเหลือ: dashboardData.value?.stats?.totalStock?.toLocaleString() ?? 0,
 }));
 // ใน Dashboard.vue
-const isMobile = ref(false)
+const isMobile = ref(false);
 
 const checkScreenSize = () => {
-  isMobile.value = window.innerWidth <= 1024
+  isMobile.value = window.innerWidth <= 1024;
   if (!isMobile.value) {
-    showMobileSidebar.value = false // ปิด Mobile Sidebar อัตโนมัติเมื่อขยายจอ
+    showMobileSidebar.value = false; // ปิด Mobile Sidebar อัตโนมัติเมื่อขยายจอ
   }
-}
+};
 
 onMounted(() => {
-  loadData()
-  checkScreenSize()
-  window.addEventListener('resize', checkScreenSize)
-})
+  loadData();
+  checkScreenSize();
+  window.addEventListener("resize", checkScreenSize);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('resize', checkScreenSize)
-})
+  window.removeEventListener("resize", checkScreenSize);
+});
 const salesChartConfig = computed(() => ({
   type: "line" as const,
   // --- เพิ่มส่วนนี้เข้าไปครับ ---
@@ -467,7 +467,8 @@ const menuItems = [
   }
 
   /* 2. ปรับตัวอักษรในตารางให้เล็กลงแต่ยังอ่านง่าย */
-  .data-table th, .data-table td {
+  .data-table th,
+  .data-table td {
     padding: 0.75rem 0.5rem;
     font-size: 0.8rem;
   }

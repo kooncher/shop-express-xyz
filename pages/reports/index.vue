@@ -954,4 +954,120 @@ onMounted(() => {
   opacity: 0.5;
   cursor: not-allowed;
 }
+/* --- Media Queries สำหรับมือถือและแท็บเล็ต --- */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0 !important; /* เคลียร์ sidebar margin */
+  }
+
+  .two-column-layout {
+    grid-template-columns: 1fr; /* สินค้าขายดี กับ สถานะ ปรับเป็นแนวตั้ง */
+  }
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 1rem;
+    padding-bottom: 80px; /* เผื่อพื้นที่ให้ปุ่ม Hamburger ลอยตัว */
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .date-filter {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* ปุ่ม Excel กับ รีเฟรช แบ่งครึ่งหน้าจอ */
+    gap: 0.5rem;
+  }
+
+  .btn-export, .btn-refresh {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  /* --- 1. Stats Grid: ปรับเป็น 2 คอลัมน์แบบหน้า Dashboard --- */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .stat-card {
+    padding: 1rem !important;
+    flex-direction: column; /* ไอคอนอยู่บน ข้อมูลอยู่ล่าง */
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .stat-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem !important;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  /* --- 2. Chart: ปรับให้เลื่อนในแนวนอนได้ (กันกราฟเบียดจนดูไม่รู้เรื่อง) --- */
+  .chart-container {
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+
+  .simple-chart {
+    min-width: 500px; /* บังคับความกว้างขั้นต่ำเพื่อให้กราฟมีพื้นที่ยืด */
+  }
+
+  /* --- 3. Table: ปรับให้เลื่อนแนวนอน --- */
+  .table-container {
+    margin: 0 -1rem; /* ขยายขอบตารางให้ชนขอบจอ */
+    padding: 0 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .data-table {
+    min-width: 600px; /* ป้องกันข้อมูลเบียดกันจนอ่านยาก */
+  }
+
+  /* --- 4. ปรับขนาดตัวอักษรทั่วไป --- */
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .card-title {
+    font-size: 1.1rem;
+  }
+
+  .product-item {
+    padding: 0.75rem;
+    grid-template-columns: auto 1fr; /* เอา Product Bar ออกในมือถือเพื่อให้ชื่อชัดขึ้น */
+  }
+
+  .product-bar {
+    display: none; /* ซ่อนแถบพลังในมือถือเพื่อให้ดูสะอาดตา */
+  }
+}
+
+/* สำหรับมือถือขนาดเล็กมาก */
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* ยังคงไว้ 2 คอลัมน์ */
+  }
+  
+  .stat-value {
+    font-size: 1.1rem !important;
+  }
+}
+
 </style>

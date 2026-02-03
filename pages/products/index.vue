@@ -917,6 +917,57 @@ onMounted(async () => {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+
+  /* --- ส่วน Stats Grid: ปรับให้เรียง 2 คอลัมน์แบบในรูป --- */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important; /* บังคับแถวละ 2 กล่อง */
+    gap: 10px !important; /* ระยะห่างพอดีๆ ไม่กว้างเกินไป */
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    padding: 1rem !important; /* ลด padding ให้กระชับ */
+    flex-direction: row !important; /* จัด icon กับตัวเลขไว้คนละฝั่ง */
+    justify-content: space-between;
+    height: auto;
+    min-height: 90px;
+    margin-bottom: 0 !important; /* ให้ grid จัดการ margin เอง */
+  }
+
+  .stat-value {
+    font-size: 1.25rem !important; /* ลดขนาดตัวเลขไม่ให้เบียดกัน */
+    margin-top: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem !important; /* ชื่อหัวข้อเล็กลงนิดนึง */
+  }
+
+  .stat-icon {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    font-size: 1.2rem !important;
+    min-width: 2.5rem;
+  }
+
+  /* --- ส่วน Filters & Search: ปรับให้เต็มความกว้างและกดง่าย --- */
+  .filters {
+    flex-direction: column !important; /* ค้นหาอยู่บน Dropdown อยู่ล่าง */
+    gap: 12px !important;
+  }
+
+  .search-box {
+    width: 100% !important;
+  }
+
+  .filter-select {
+    width: 100% !important; /* ตัวเลือกสถานะกว้างเต็มจอ */
+  }
+
+  /* --- ส่วน Main Content --- */
+  .main-content {
+    margin-left: 0 !important;
+  }
 }
 
 /* Products.vue <style scoped> */

@@ -191,9 +191,9 @@
 </template>
 
 <script setup lang="ts">
-import CustomerModal from '~/components/customers/CustomerModal.vue'
-import CustomerDetailModal from '~/components/customers/CustomerDetailModal.vue'
-import ConfirmModal from '~/components/orders/ConfirmModal.vue'
+import CustomerModal from '~/components/Customers/CustomerModal.vue'
+import CustomerDetailModal from '~/components/Customers/CustomerDetailModal.vue'
+import ConfirmModal from '~/components/Orders/ConfirmModal.vue'
 definePageMeta({
   middleware: 'auth'
 })

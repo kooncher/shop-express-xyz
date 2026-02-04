@@ -218,9 +218,9 @@
 </template>
 
 <script setup lang="ts">
-import OrderModal from '~/components/orders/OrderModal.vue'
-import OrderDetailModal from '~/components/orders/OrderDetailModal.vue'
-import ConfirmModal from '~/components/orders/ConfirmModal.vue'
+import OrderModal from '~/components/Orders/OrderModal.vue'
+import OrderDetailModal from '~/components/Orders/OrderDetailModal.vue'
+import ConfirmModal from '~/components/Orders/ConfirmModal.vue'
 
 
 definePageMeta({

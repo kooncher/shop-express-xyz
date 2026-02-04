@@ -186,7 +186,7 @@
 </template>
 
 <script setup>
-import ProductModal from '~/components/products/ProductModal.vue'
+import ProductModal from '~/components/Products/ProductModal.vue'
 
 const { user } = useAuth()
 const { $supabase } = useNuxtApp()

@@ -194,10 +194,3 @@ npm run generate   # Generate static site
 npm run preview    # Preview production build
 ```
 
-## 📄 License
-
-MIT
-
----
-
-สร้างโดย Claude AI | Made with ❤️

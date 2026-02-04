@@ -1,12 +1,29 @@
 <template>
   <div class="dashboard-container">
+
+     <button class="floating-hamburger-btn" @click="toggleMobileSidebar">
+      <div class="hamburger-icon-wrapper">
+        <span :class="{ 'line-open': showMobileSidebar }"></span>
+        <span :class="{ 'line-open': showMobileSidebar }"></span>
+        <span :class="{ 'line-open': showMobileSidebar }"></span>
+      </div>
+    </button>
+
+       <!-- Mobile Overlay -->
+    <div 
+      v-if="showMobileSidebar" 
+      class="mobile-overlay"
+      @click="closeMobileSidebar"
+    ></div>
+
     <Sidebar
       :menu-items="menuItems"
       :user="userData"
+      :is-mobile-open="showMobileSidebar"
       @item-click="handleMenuClick"
       @toggle="handleToggle"
+      @close-mobile="closeMobileSidebar"
     />
-
     <main class="main-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <div class="content-wrapper">
         <!-- Header -->
@@ -228,9 +245,9 @@ const {
   getOrderStatusDistribution 
 } = useReports()
 
-const isSidebarCollapsed = ref(false)
 const loading = ref(true)
-
+const showMobileSidebar = ref(false)
+const isSidebarCollapsed = ref(false)
 const stats = ref({
   totalRevenue: 0,
   totalOrders: 0,
@@ -419,6 +436,18 @@ const getStatusLabel = (status: string) => {
   }
   return labels[status] || status
 }
+// Mobile Sidebar Controls
+const toggleMobileSidebar = () => {
+  showMobileSidebar.value = !showMobileSidebar.value
+}
+
+const closeMobileSidebar = () => {
+  showMobileSidebar.value = false
+}
+
+const handleToggle = (isCollapsed) => {
+  isSidebarCollapsed.value = isCollapsed
+}
 
 const handleMenuClick = (item: any) => {
   if (item.id === 'home') {
@@ -434,10 +463,6 @@ const handleMenuClick = (item: any) => {
   } else if (item.id === 'settings') {
     navigateTo('/settings')
   }
-}
-
-const handleToggle = (isCollapsed: boolean) => {
-  isSidebarCollapsed.value = isCollapsed
 }
 
 // Initialize
@@ -1058,7 +1083,69 @@ onMounted(() => {
     display: none; /* ซ่อนแถบพลังในมือถือเพื่อให้ดูสะอาดตา */
   }
 }
+/* --- Floating Hamburger Button (ม่วง Indigo เหมือนในรูป) --- */
+.floating-hamburger-btn {
+  display: none; /* เริ่มต้นซ่อนไว้ก่อน */
+  position: fixed;
+  bottom: 25px; /* ระยะจากขอบล่าง */
+  right: 25px;  /* ระยะจากขอบขวา */
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border-radius: 50%;
+  border: none;
+  z-index: 2001; /* ให้อยู่เหนือทุกอย่าง */
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
+.floating-hamburger-btn:active {
+  transform: scale(0.9);
+}
+
+/* เส้น Hamburger */
+.hamburger-icon-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hamburger-icon-wrapper span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: 0.3s ease;
+}
+
+/* Animation เส้นเมื่อเปิดเมนู */
+.line-open:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.line-open:nth-child(2) { opacity: 0; }
+.line-open:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* --- Media Query: แสดงเฉพาะบนมือถือ --- */
+@media (max-width: 1024px) {
+  .floating-hamburger-btn {
+    display: flex; /* แสดงปุ่มเฉพาะหน้าจอเล็ก */
+  }
+
+  /* แก้ไขส่วนที่เละ: เคลียร์ Margin ของหน้าหลักออก */
+  .main-content {
+    margin-left: 0 !important;
+    padding: 15px !important;
+    padding-top: 20px !important; /* เว้นที่ให้ Header */
+  }
+
+  /* ป้องกันตารางล้น (เละแบบในรูป image_f3be03) */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
 /* สำหรับมือถือขนาดเล็กมาก */
 @media (max-width: 480px) {
   .stats-grid {

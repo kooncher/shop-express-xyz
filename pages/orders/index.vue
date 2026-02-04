@@ -230,13 +230,13 @@ definePageMeta({
 const { user } = useAuth()
 const { getOrders, deleteOrder } = useOrders()
 
-const isSidebarCollapsed = ref(false)
 const loading = ref(true)
 const orders = ref([])
 const searchQuery = ref('')
 const filterStatus = ref('')
 const filterPaymentStatus = ref('')
 const showMobileSidebar = ref(false)
+const isSidebarCollapsed = ref(false)
 
 // Modal states - ส่วนที่หายไป
 const showModal = ref(false)

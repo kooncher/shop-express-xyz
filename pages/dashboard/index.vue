@@ -216,9 +216,14 @@ const loadData = async () => {
     loading.value = false;
   }
 };
-
-onMounted(loadData);
-
+const { initAuth } = useAuth()
+onMounted(async () => {
+  // ถ้าเปิดหน้ามาแล้วยังไม่มี user (เช่น ตอนรีเฟรช)
+  if (!user.value) {
+    console.log("รีเฟรชหน้าจอแล้วชื่อหาย... กำลังดึงข้อมูลใหม่")
+    await initAuth() // ดึงข้อมูลจาก Supabase ใหม่
+  }
+})
 // --- Helpers ---
 const formatDate = (d: string) =>
   d

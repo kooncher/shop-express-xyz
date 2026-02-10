@@ -245,14 +245,14 @@ const selectedOrder = ref(null)
 const showDeleteConfirm = ref(false)
 const orderToDelete = ref(null)
 
-const menuItems = ref([
-  { id: 'home', label: 'หน้าแรก', icon: '🏠' },
-  { id: 'products', label: 'สินค้า', icon: '📦' },
-  { id: 'orders', label: 'คำสั่งซื้อ', icon: '📋' },
-  { id: 'customers', label: 'ลูกค้า', icon: '👥' },
-  { id: 'reports', label: 'รายงาน', icon: '📊' },
-  { id: 'settings', label: 'ตั้งค่า', icon: '⚙️' }
-])
+const menuItems = [
+  { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
+  { id: "products", label: "สินค้า", icon: "📦", roles: ["admin", "customer"] },
+  { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
+  { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] }, // เฉพาะ Admin
+  { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },   // เฉพาะ Admin
+  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin",'customer'] },   // เฉพาะ Admin
+];
 
 const userData = computed(() => ({
   name: user.value?.profile?.full_name || 'ผู้ใช้งาน',

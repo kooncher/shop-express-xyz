@@ -38,7 +38,7 @@
     <!-- Menu Items -->
     <nav class="sidebar-menu">
       <button
-        v-for="item in menuItems"
+        v-for="item in filteredMenuItems"
         :key="item.id"
         @click="handleItemClick(item)"
         :class="['menu-item', { active: isActive(item.id) }]"
@@ -55,12 +55,14 @@ interface MenuItem {
   id: string
   label: string
   icon: string
+  roles?: string[] // เพิ่มตัวเลือกสำหรับระบุสิทธิ์ (เช่น ['admin', 'user'])
 }
 
 interface UserData {
   name: string
   email: string
   avatar: string
+  roles?: string[] // เพิ่มตัวเลือกสำหรับระบุสิทธิ์ (เช่น ['admin', 'user'])
 }
 
 interface Props {
@@ -92,19 +94,32 @@ const loadShopName = async () => {
     shopName.value = data.shop_name
   }
 }
+const { user: authUser } = useAuth() // ดึงข้อมูล user จาก global state มาเช็ค role
 
+const filteredMenuItems = computed(() => {
+  // ดึง Role ปัจจุบัน (ถ้าไม่มีให้เป็น 'user' ไว้ก่อน)
+  const currentRole = authUser.value?.profile?.role || 'user'
+
+  return props.menuItems.filter(item => {
+    // ถ้าเมนูไม่ได้กำหนด roles ไว้ หรือ user มี role ตรงกับที่ระบุในเมนู ให้แสดงผล
+    if (!item.roles || item.roles.length === 0) return true
+    return item.roles.includes(currentRole)
+  })
+})
 // ตรวจสอบว่า menu item ไหน active
 const isActive = (itemId: string) => {
   const path = route.path
-  
-  if (itemId === 'home' && path === '/dashboard') return true
-  if (itemId === 'products' && path === '/products') return true
-  if (itemId === 'orders' && path === '/orders') return true
-  if (itemId === 'customers' && path === '/customers') return true
-  if (itemId === 'reports' && path === '/reports') return true
-  if (itemId === 'settings' && path === '/settings') return true
-  
-  return false
+  const mapping: Record<string, string> = {
+    home: '/dashboard',
+    products: '/products',
+    orders: '/orders',
+    customers: '/customers',
+    reports: '/reports',
+    settings: '/settings',
+    shop: '/shop',
+    'my-orders': '/my-orders'
+  }
+  return path === mapping[itemId]
 }
 
 const toggleSidebar = () => {
@@ -115,24 +130,23 @@ const toggleSidebar = () => {
 // แก้ไขตรงนี้ - navigate และ emit
 const handleItemClick = (item: MenuItem) => {
   showUserMenu.value = false
-  
-  // Emit ให้ parent (Dashboard) จัดการ
   emit('itemClick', item)
   emit('closeMobile')
   
-  // Navigate โดยตรง
-  if (item.id === 'home') {
-    navigateTo('/dashboard')
-  } else if (item.id === 'products') {
-    navigateTo('/products')
-  } else if (item.id === 'orders') {
-    navigateTo('/orders')
-  } else if (item.id === 'customers') {
-    navigateTo('/customers')
-  } else if (item.id === 'reports') {
-    navigateTo('/reports')
-  } else if (item.id === 'settings') {
-    navigateTo('/settings')
+  // ✅ ใช้ Switch case หรือ Map เพื่อความสะอาดของโค้ด
+  const routes: Record<string, string> = {
+    home: '/dashboard',
+    products: '/products',
+    orders: '/orders',
+    customers: '/customers',
+    reports: '/reports',
+    settings: '/settings',
+    shop: '/shop',            // เพิ่มสำหรับ User
+    'my-orders': '/my-orders' // เพิ่มสำหรับ User
+  }
+
+  if (routes[item.id]) {
+    navigateTo(routes[item.id])
   }
 }
 

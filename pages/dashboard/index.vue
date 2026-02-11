@@ -244,11 +244,13 @@ const handleLogout = () => signOut();
 
 const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
-  { id: "products", label: "สินค้า", icon: "📦", roles: ["admin", "customer"] },
+  { id: "products", label: "สินค้า", icon: "📦", roles: ["admin"] },
   { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
   { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] }, // เฉพาะ Admin
   { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },   // เฉพาะ Admin
-  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin",'customer'] },   // เฉพาะ Admin
+  { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ['customer'] },
+  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin",'customer'] }
+
 ];
 </script>
 

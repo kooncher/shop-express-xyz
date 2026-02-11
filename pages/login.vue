@@ -84,7 +84,16 @@ const handleLogin = async () => {
       return
     }
 
-    if (data) {
+    if (data && data.user) {
+      // 1. ดึง Role จาก metadata ของ user ที่ล็อกอินเข้ามา
+      const userRole = data.user.user_metadata?.role || 'customer'
+      
+      // 2. บันทึกลง Cookie (ตั้งชื่อให้ตรงกับที่ใช้ใน middleware/auth.ts)
+      // กำหนด maxAge เป็น 7 วัน
+      const roleCookie = useCookie('user-role', { maxAge: 60 * 60 * 24 * 7 })
+      roleCookie.value = userRole
+
+      // 3. นำทางไปยัง Dashboard
       navigateTo('/dashboard', { replace: true })
     }
   } catch (err: any) {

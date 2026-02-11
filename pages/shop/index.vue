@@ -23,7 +23,7 @@
       @close-mobile="closeMobileSidebar"
     />
 
-    <CartModal 
+    <CartModal
       :is-open="isCartOpen"
       :cart="cart"
       :total="cartTotal"
@@ -43,10 +43,12 @@
             <p class="page-subtitle">พบกับสินค้าคุณภาพในราคาพิเศษ</p>
           </div>
 
-        <button class="cart-btn" @click="isCartOpen = true">
-      <span>🛒</span>
-      <span v-if="cart.length > 0" class="cart-count">{{ cart.length }}</span>
-    </button>
+          <button class="cart-btn" @click="isCartOpen = true">
+            <span>🛒</span>
+            <span v-if="cart.length > 0" class="cart-count">{{
+              cart.length
+            }}</span>
+          </button>
         </div>
 
         <div class="shop-filter-bar">
@@ -63,7 +65,14 @@
           <div class="category-container">
             <div class="category-tags">
               <button
-                v-for="item in ['ทั้งหมด', 'เสื้อผ้า', 'หนังสือ', 'อาหารและเครื่องดื่ม', 'อุปกรณ์อิเล็กทรอนิกส์', 'ของใช้ในบ้าน']"
+                v-for="item in [
+                  'ทั้งหมด',
+                  'เสื้อผ้า',
+                  'หนังสือ',
+                  'อาหารและเครื่องดื่ม',
+                  'อุปกรณ์อิเล็กทรอนิกส์',
+                  'ของใช้ในบ้าน',
+                ]"
                 :key="item"
                 class="tag"
                 :class="{ active: selectedCategory === item }"
@@ -115,32 +124,33 @@
   </div>
 </template>
 <script setup>
-import CartModal from '~/components/Shops/CartModal.vue'
+import CartModal from "~/components/Shops/CartModal.vue";
 
 // 1. นำเข้า Utilities
 const { user } = useAuth();
 const { $supabase } = useNuxtApp();
-
+const { initAuth } = useAuth(); // เพิ่ม initAuth
+const userRoleCookie = useCookie('user-role'); // 👈 ดึงค่า Role จาก Cooki
 // 2. สถานะของ UI และข้อมูล
 const showMobileSidebar = ref(false);
 const isSidebarCollapsed = ref(false);
 const loading = ref(true); // ตั้งเป็น true เพื่อรอโหลดข้อมูล
 const searchQuery = ref("");
 
-const isCartOpen = ref(false)
-const cart = ref([])
+const isCartOpen = ref(false);
+const cart = ref([]);
 const products = ref([]); // เริ่มต้นด้วย Array ว่าง
 const updateQuantity = ({ index, change }) => {
-  const item = cart.value[index]
+  const item = cart.value[index];
   if (item) {
-    const newQty = item.quantity + change
-    if (newQty > 0) item.quantity = newQty
+    const newQty = item.quantity + change;
+    if (newQty > 0) item.quantity = newQty;
   }
-}
+};
 
 const removeFromCart = (index) => {
-  cart.value.splice(index, 1)
-}
+  cart.value.splice(index, 1);
+};
 const fetchProducts = async () => {
   try {
     loading.value = true;
@@ -183,10 +193,10 @@ const handleCheckout = async () => {
       .insert([
         {
           order_number: orderNumber,
-          customer_name: userData.value.name,   // ดึงจาก Computed userData
-        //   customer_phone: "0891563257",        // ข้อมูลตัวอย่างตามรูป
-        //   customer_address: "หมู่บ้านโคกะโหลก",   // ข้อมูลตัวอย่างตามรูป
-          total_price: cartTotal.value,        // ราคารวมที่คำนวณจากตะกร้า
+          customer_name: userData.value.name, // ดึงจาก Computed userData
+          //   customer_phone: "0891563257",        // ข้อมูลตัวอย่างตามรูป
+          //   customer_address: "หมู่บ้านโคกะโหลก",   // ข้อมูลตัวอย่างตามรูป
+          total_price: cartTotal.value, // ราคารวมที่คำนวณจากตะกร้า
         },
       ])
       .select();
@@ -195,10 +205,9 @@ const handleCheckout = async () => {
 
     // 3. แจ้งเตือนและล้างข้อมูลหลังบันทึกสำเร็จ
     alert(`ยืนยันการสั่งซื้อสำเร็จ! เลขที่ออเดอร์: ${orderNumber}`);
-    
-    cart.value = [];       // ล้างตะกร้าสินค้า
-    isCartOpen.value = false; // ปิด Modal
 
+    cart.value = []; // ล้างตะกร้าสินค้า
+    isCartOpen.value = false; // ปิด Modal
   } catch (error) {
     console.error("Error creating order:", error.message);
     alert("ไม่สามารถบันทึกคำสั่งซื้อได้: " + error.message);
@@ -243,12 +252,14 @@ const handleMenuClick = (item) => {
   closeMobileSidebar();
 };
 
-const userData = computed(() => ({
-  name: user.value?.user_metadata?.full_name || "testuser",
-  email: user.value?.email || "",
-  avatar: "👤",
-}));
-
+const userData = computed(() => {
+  return {
+    name: user.value?.user_metadata?.full_name || "testuser",
+    email: user.value?.email || "",
+    avatar: "👤",
+    role: user.value?.user_metadata?.role || userRoleCookie.value || "customer" // 👈 ดึงจาก Cookie ถ้า User ยังไม่มา
+  }
+});
 const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
   { id: "products", label: "สินค้า", icon: "📦", roles: ["admin"] },
@@ -260,17 +271,23 @@ const menuItems = [
     roles: ["admin", "customer"],
   },
 ];
-
+onMounted(async () => {
+  // รอเช็ค Auth ให้ชัวร์ก่อนโหลดสินค้า
+  if (!user.value) {
+    await initAuth();
+  }
+  await fetchProducts();
+});
 const formatNumber = (num) => new Intl.NumberFormat("th-TH").format(num || 0);
 // คำนวณราคารวมทั้งหมดในตะกร้า
 const cartTotal = computed(() => {
   return cart.value.reduce((total, item) => {
-    return total + (item.price * item.quantity);
+    return total + item.price * item.quantity;
   }, 0);
 });
 const addToCart = (product) => {
   // 1. ตรวจสอบว่ามีสินค้านี้ในตะกร้าหรือยัง
-  const existingItem = cart.value.find(item => item.id === product.id);
+  const existingItem = cart.value.find((item) => item.id === product.id);
 
   if (existingItem) {
     // 2. ถ้ามีแล้ว ให้บวกจำนวนเพิ่ม
@@ -279,12 +296,12 @@ const addToCart = (product) => {
     // 3. ถ้ายังไม่มี ให้เพิ่มเข้าไปใหม่ (สร้าง object ใหม่ที่มี quantity: 1)
     cart.value.push({
       ...product,
-      quantity: 1
+      quantity: 1,
     });
   }
-  
+
   // (Optional) เปิด Modal ทันทีเมื่อกดเพิ่ม หรือจะแค่โชว์เลขที่ปุ่มรถเข็นก็ได้
-  // isCartOpen.value = true; 
+  // isCartOpen.value = true;
 };
 </script>
 

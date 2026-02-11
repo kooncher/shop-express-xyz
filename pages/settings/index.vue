@@ -354,6 +354,9 @@ const {
 const activeTab = ref('profile')
 const showMobileSidebar = ref(false)
 const isSidebarCollapsed = ref(false)
+const { initAuth } = useAuth(); // เพิ่ม initAuth
+const userRoleCookie = useCookie('user-role'); // 👈 ดึงค่า Role จาก Cooki
+
 const tabs = [
   { id: 'profile', label: 'โปรไฟล์', icon: '👤' },
   { id: 'shop', label: 'ข้อมูลร้าน', icon: '🏪' },
@@ -373,11 +376,14 @@ const menuItems = [
 
 ];
 
-const userData = computed(() => ({
-  name: user.value?.profile?.full_name || 'ผู้ใช้งาน',
-  email: user.value?.email || '',
-  avatar: '👤'
-}))
+const userData = computed(() => {
+  return {
+    name: user.value?.user_metadata?.full_name || "testuser",
+    email: user.value?.email || "",
+    avatar: "👤",
+    role: user.value?.user_metadata?.role || userRoleCookie.value || "customer" // 👈 ดึงจาก Cookie ถ้า User ยังไม่มา
+  }
+});
 
 // Profile Form
 const profileForm = ref({

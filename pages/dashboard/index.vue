@@ -240,7 +240,17 @@ const handleToggle = (val: boolean) => (isSidebarCollapsed.value = val);
 const toggleMobileSidebar = () =>
   (showMobileSidebar.value = !showMobileSidebar.value);
 const closeMobileSidebar = () => (showMobileSidebar.value = false);
-const handleLogout = () => signOut();
+const handleLogout = async () => {
+  const { error } = await supabase.auth.signOut()
+  if (!error) {
+    // ล้างค่า Cookie
+    const roleCookie = useCookie('user-role')
+    roleCookie.value = null
+    
+    // กลับไปหน้า Login
+    navigateTo('/login')
+  }
+}
 
 const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },

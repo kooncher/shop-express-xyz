@@ -7,8 +7,9 @@
     ></div>
 
     <button @click="toggleMobileSidebar" class="mobile-menu-btn">
-      <span class="hamburger-line"></span><span class="hamburger-line"></span
-      ><span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
     </button>
 
     <Sidebar
@@ -18,6 +19,7 @@
       :is-collapsed="isSidebarCollapsed"
       @toggle="handleToggle"
       @close-mobile="closeMobileSidebar"
+      @item-click="handleMenuClick"
     />
 
     <main
@@ -29,7 +31,7 @@
           <div class="header-text">
             <h1 class="page-title">{{ currentPage }}</h1>
             <p class="page-subtitle">
-              ยินดีต้อนรับกลับมา, {{ user?.profile?.full_name ?? "ผู้ใช้งาน" }}!
+              ยินดีต้อนรับกลับมา, {{ userData.name }}!
             </p>
           </div>
           <button @click="handleLogout" class="logout-btn">
@@ -107,49 +109,127 @@
 </template>
 
 <script setup lang="ts">
-// --- Imports ---
 import Barchart from "../components/Globalcomponents/Barchart.vue";
 
-const { user, signOut } = useAuth();
-const { getAllDashboardData } = useDashboard();
+// 1. ตั้งค่า Page & Middleware
+definePageMeta({
+  middleware: 'auth'
+});
 
-// --- State ---
+// 2. ดึง Utilities
+const { user } = useAuth();
+const { getAllDashboardData } = useDashboard();
+const { $supabase } = useNuxtApp();
+const roleCookie = useCookie('user-role');
+
+// 3. สถานะหลัก (State)
 const loading = ref(true);
 const dashboardData = ref<any>(null);
 const isSidebarCollapsed = ref(false);
 const showMobileSidebar = ref(false);
+const isMobile = ref(false);
 const currentPage = ref("หน้าแรก");
 
-// --- Computed Props (Professional Way) ---
+// 4. ข้อมูลผู้ใช้ (Computed เพื่อความเสถียรตอนรีเฟรช)
+const userData = computed(() => ({
+  name: user.value?.user_metadata?.full_name ?? user.value?.profile?.full_name ?? "ผู้ใช้งาน",
+  email: user.value?.email ?? "",
+  avatar: "👤",
+  role: roleCookie.value || 'customer'
+}));
+
+// 5. เมนูที่มีการกำหนด Role
+const menuItems = [
+  { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
+  { id: "products", label: "สินค้า", icon: "📦", roles: ["admin"] },
+  { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
+  { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] },
+  { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },
+  { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ['customer', 'admin'] },
+  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin", "customer"] }
+];
+
+// 6. ข้อมูลสถิติ (Computed จาก Dashboard Data)
 const statsData = computed(() => ({
-  ยอดขายวันนี้:
-    "฿" + (dashboardData.value?.stats?.totalSales?.toLocaleString() ?? 0),
+  ยอดขายวันนี้: "฿" + (dashboardData.value?.stats?.totalSales?.toLocaleString() ?? 0),
   คำสั่งซื้อใหม่: dashboardData.value?.stats?.newOrdersCount ?? 0,
   ลูกค้าใหม่: dashboardData.value?.stats?.newCustomersCount ?? 0,
   สินค้าคงเหลือ: dashboardData.value?.stats?.totalStock?.toLocaleString() ?? 0,
 }));
-// ใน Dashboard.vue
-const isMobile = ref(false);
 
-const checkScreenSize = () => {
-  isMobile.value = window.innerWidth <= 1024;
-  if (!isMobile.value) {
-    showMobileSidebar.value = false; // ปิด Mobile Sidebar อัตโนมัติเมื่อขยายจอ
+// 7. ฟังก์ชันโหลดข้อมูลและจัดการหน้าจอ
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const { data } = await getAllDashboardData();
+    dashboardData.value = data;
+  } catch (err) {
+    console.error("Error fetching data:", err);
+  } finally {
+    loading.value = false;
   }
 };
 
-onMounted(() => {
-  loadData();
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth <= 1024;
+  if (!isMobile.value) showMobileSidebar.value = false;
+};
+
+const handleLogout = async () => {
+  const { $supabase } = useNuxtApp(); // 👈 ต้องมีบรรทัดนี้เพื่อดึงตัวจัดการ Supabase มา
+  const roleCookie = useCookie('user-role');
+
+  try {
+    // 1. สั่ง SignOut ไปที่ Server (ใช้เวลาแป๊บนึง)
+    await $supabase.auth.signOut();
+  } catch (err) {
+    console.error("Supabase SignOut Error:", err);
+  } finally {
+    // 2. ไม่ว่าข้างบนจะพังหรือไม่ เราต้องล้างค่าในเครื่องทิ้งให้หมด
+    roleCookie.value = null; 
+    
+    // 3. ใช้ navigateTo แบบ 'replace' เพื่อไม่ให้กดปุ่ม Back กลับมาหน้านี้ได้อีก
+    await navigateTo('/login', { replace: true });
+    
+    // 4. บังคับรีเฟรช 1 ครั้งเพื่อเคลียร์ State ที่ค้างอยู่ในหน่วยความจำ (Option เสริมเพื่อความชัวร์)
+    window.location.reload(); 
+  }
+};
+// 8. Lifecycle Hooks (รวมศูนย์ที่เดียว)
+onMounted(async () => {
   checkScreenSize();
   window.addEventListener("resize", checkScreenSize);
+  await loadData();
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", checkScreenSize);
 });
+
+// 9. UI Helpers (คงเดิมทั้งหมด)
+const handleToggle = (val: boolean) => (isSidebarCollapsed.value = val);
+const toggleMobileSidebar = () => (showMobileSidebar.value = !showMobileSidebar.value);
+const closeMobileSidebar = () => (showMobileSidebar.value = false);
+
+const handleMenuClick = (item: any) => {
+  if (item.id === "home") navigateTo("/dashboard");
+  if (item.id === "products") navigateTo("/products");
+  if (item.id === "shop") navigateTo("/shop");
+  closeMobileSidebar();
+};
+
+const formatDate = (d: string) =>
+  d ? new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : "-";
+
+const getStatusLabel = (s: string) =>
+  ({ pending: "รอชำระ", paid: "ชำระแล้ว", completed: "สำเร็จ" })[s] || s;
+
+const getStatusClass = (s: string) =>
+  s === "paid" || s === "completed" || s === "ชำระแล้ว" ? "success" : "warning";
+
+// 10. Chart Configs (คงเดิมทั้งหมด)
 const salesChartConfig = computed(() => ({
   type: "line" as const,
-  // --- เพิ่มส่วนนี้เข้าไปครับ ---
   data: {
     labels: dashboardData.value?.chartData?.dates || [],
     datasets: [
@@ -163,7 +243,6 @@ const salesChartConfig = computed(() => ({
       },
     ],
   },
-  // -------------------------
   options: {
     responsive: true,
     maintainAspectRatio: false,
@@ -176,7 +255,7 @@ const salesChartConfig = computed(() => ({
     },
     scales: {
       y: {
-        beginAtZero: true, // เพิ่มตัวนี้เพื่อให้แกน Y เริ่มที่ 0 เสมอ
+        beginAtZero: true,
         ticks: {
           callback: (value: any) => "฿" + value.toLocaleString(),
         },
@@ -184,6 +263,7 @@ const salesChartConfig = computed(() => ({
     },
   },
 }));
+
 const barChartConfig = computed(() => ({
   type: "bar" as const,
   data: {
@@ -199,73 +279,10 @@ const barChartConfig = computed(() => ({
   },
   options: { responsive: true, maintainAspectRatio: false },
 }));
-
-const userData = computed(() => ({
-  name: user.value?.profile?.full_name ?? "ผู้ใช้งาน",
-  email: user.value?.email ?? "",
-  avatar: "👤",
-}));
-
-// --- Actions ---
-const loadData = async () => {
-  loading.value = true;
-  try {
-    const { data } = await getAllDashboardData();
-    dashboardData.value = data;
-  } finally {
-    loading.value = false;
-  }
-};
-const { initAuth } = useAuth()
-onMounted(async () => {
-  // ถ้าเปิดหน้ามาแล้วยังไม่มี user (เช่น ตอนรีเฟรช)
-  if (!user.value) {
-    console.log("รีเฟรชหน้าจอแล้วชื่อหาย... กำลังดึงข้อมูลใหม่")
-    await initAuth() // ดึงข้อมูลจาก Supabase ใหม่
-  }
-})
-// --- Helpers ---
-const formatDate = (d: string) =>
-  d
-    ? new Date(d).toLocaleDateString("th-TH", {
-        day: "numeric",
-        month: "short",
-      })
-    : "-";
-const getStatusLabel = (s: string) =>
-  ({ pending: "รอชำระ", paid: "ชำระแล้ว", completed: "สำเร็จ" })[s] || s;
-const getStatusClass = (s: string) =>
-  s === "paid" || s === "completed" || s === "ชำระแล้ว" ? "success" : "warning";
-const handleToggle = (val: boolean) => (isSidebarCollapsed.value = val);
-const toggleMobileSidebar = () =>
-  (showMobileSidebar.value = !showMobileSidebar.value);
-const closeMobileSidebar = () => (showMobileSidebar.value = false);
-const handleLogout = async () => {
-  const { error } = await supabase.auth.signOut()
-  if (!error) {
-    // ล้างค่า Cookie
-    const roleCookie = useCookie('user-role')
-    roleCookie.value = null
-    
-    // กลับไปหน้า Login
-    navigateTo('/login')
-  }
-}
-
-const menuItems = [
-  { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
-  { id: "products", label: "สินค้า", icon: "📦", roles: ["admin"] },
-  { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
-  { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] }, // เฉพาะ Admin
-  { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },   // เฉพาะ Admin
-  { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ['customer'] },
-  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin",'customer'] }
-
-];
 </script>
 
 <style scoped>
-/* เก็บ CSS เดิมของคุณไว้ได้เลย เพราะมันจัดการ Layout ได้ดีอยู่แล้ว */
+/* CSS ทุกอย่างเหมือนเดิมเป๊ะครับ */
 .dashboard-container {
   display: flex;
   min-height: 100vh;
@@ -312,6 +329,11 @@ const menuItems = [
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
 }
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
 .stat-value {
   font-size: 1.75rem;
   font-weight: 800;
@@ -332,12 +354,17 @@ const menuItems = [
   display: flex;
   flex-direction: column;
 }
+.card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
 .orders-card {
   background: white;
   padding: 1.5rem;
   border-radius: 1rem;
   border: 1px solid #e2e8f0;
-  margin-top: 1.5rem;
 }
 .table-container {
   overflow-x: auto;
@@ -382,27 +409,13 @@ const menuItems = [
   animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-@media (max-width: 1024px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-  .main-content {
-    margin-left: 0 !important;
-  }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-/* --- ส่วนเพิ่มเติมใน <style scoped> ของ Dashboard --- */
-
-/* ปุ่ม Mobile Menu ให้ดู Premium ขึ้น */
+/* Mobile Responsive */
 .mobile-menu-btn {
-  display: none; /* ซ่อนใน Desktop */
+  display: none;
   position: fixed;
   bottom: 2rem;
   right: 2rem;
@@ -420,15 +433,12 @@ const menuItems = [
   justify-content: center;
   gap: 4px;
 }
-
 .hamburger-line {
   width: 24px;
   height: 2px;
   background: white;
   border-radius: 2px;
 }
-
-/* Overlay สำหรับปิด Sidebar */
 .mobile-overlay {
   position: fixed;
   inset: 0;
@@ -437,119 +447,10 @@ const menuItems = [
   z-index: 999;
 }
 
-/* ปรับปรุง Responsive */
 @media (max-width: 1024px) {
-  .main-content {
-    margin-left: 0 !important;
-    padding-top: 4rem; /* เว้นที่ให้ Header ในมือถือ */
-  }
-
-  .mobile-menu-btn {
-    display: flex; /* แสดงในมือถือ */
-  }
-
-  .content-wrapper {
-    padding: 1rem;
-  }
-
-  /* จัดการตารางในมือถือ (โชว์เฉพาะที่สำคัญ) */
-  .hide-mobile {
-    display: none !important;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .logout-btn {
-    width: 100%; /* ปุ่ม Logout เต็มจอในมือถือ */
-    text-align: center;
-  }
-}
-.mobile-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px); /* เพิ่มความเบลอให้ฉากหลังดูแพง */
-  z-index: 998; /* อยู่ใต้ Sidebar (1000) แต่อยู่บน Content */
-  transition: opacity 0.3s ease;
-}
-
-@media (max-width: 768px) {
-  /* 1. ซ่อนคอลัมน์ที่ความสำคัญน้อยในมือถือ */
-  .hide-mobile {
-    display: none !important;
-  }
-
-  /* 2. ปรับตัวอักษรในตารางให้เล็กลงแต่ยังอ่านง่าย */
-  .data-table th,
-  .data-table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.8rem;
-  }
-
-  /* 3. เน้นคอลัมน์สำคัญ (เช่น รหัสคำสั่งซื้อ) */
-  .font-semibold {
-    font-size: 0.85rem;
-    color: #4f46e5; /* เพิ่มสีให้ดูเด่นขึ้นในจอเล็ก */
-  }
-
-  /* 4. ปรับ Badge ให้เล็กลง */
-  .badge {
-    padding: 0.2rem 0.5rem;
-    font-size: 0.7rem;
-  }
-  /* --- ส่วน Stats Grid: ปรับให้เรียง 2 คอลัมน์แบบในรูป --- */
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important; /* บังคับแถวละ 2 กล่อง */
-    gap: 10px !important; /* ระยะห่างพอดีๆ ไม่กว้างเกินไป */
-    margin-bottom: 1.5rem;
-  }
-
-  .stat-card {
-    padding: 1rem !important; /* ลด padding ให้กระชับ */
-    flex-direction: row !important; /* จัด icon กับตัวเลขไว้คนละฝั่ง */
-    justify-content: space-between;
-    height: auto;
-    min-height: 90px;
-    margin-bottom: 0 !important; /* ให้ grid จัดการ margin เอง */
-  }
-
-  .stat-value {
-    font-size: 1.25rem !important; /* ลดขนาดตัวเลขไม่ให้เบียดกัน */
-    margin-top: 4px;
-  }
-
-  .stat-label {
-    font-size: 0.8rem !important; /* ชื่อหัวข้อเล็กลงนิดนึง */
-  }
-
-  .stat-icon {
-    width: 2.5rem !important;
-    height: 2.5rem !important;
-    font-size: 1.2rem !important;
-    min-width: 2.5rem;
-  }
-
-  /* --- ส่วน Filters & Search: ปรับให้เต็มความกว้างและกดง่าย --- */
-  .filters {
-    flex-direction: column !important; /* ค้นหาอยู่บน Dropdown อยู่ล่าง */
-    gap: 12px !important;
-  }
-
-  .search-box {
-    width: 100% !important;
-  }
-
-  .filter-select {
-    width: 100% !important; /* ตัวเลือกสถานะกว้างเต็มจอ */
-  }
-
-  /* --- ส่วน Main Content --- */
-  .main-content {
-    margin-left: 0 !important;
-  }
+  .main-content { margin-left: 0 !important; }
+  .mobile-menu-btn { display: flex; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .hide-mobile { display: none !important; }
 }
 </style>

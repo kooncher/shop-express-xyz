@@ -1,24 +1,28 @@
-// middleware/auth.ts
 export default defineNuxtRouteMiddleware(async (to, from) => {
   if (process.server) return
 
   const { user, initAuth } = useAuth()
-  
-  // 1. รอให้ดึงข้อมูลจาก Session ให้เสร็จ (แก้ปัญหารีเฟรชแล้วค่าเป็น null)
-  if (!user.value) {
-    await initAuth()
-  }
-
-  // 2. ดึงค่า Role จาก Cookie มาเช็ค (กรณี SSR หรือรีเฟรชหน้า)
   const userRole = useCookie('user-role').value
 
-  // 3. ตรวจสอบสถานะการ Login
+  // 1. รอโหลด Auth
+  if (!user.value) await initAuth()
+
+  // 2. ถ้ายังไม่ได้ Login ให้ไปหน้า Login เท่านั้น
   if (!user.value && to.path !== '/login') {
     return navigateTo('/login')
   }
 
-  // 4. เช็คสิทธิ์เฉพาะหน้า (ตัวอย่าง: หน้าจัดการสินค้าสำหรับ Admin เท่านั้น)
-  if (to.path.startsWith('/products') && userRole !== 'admin') {
-    return navigateTo('/shop') // ถ้าไม่ใช่ admin ให้ดีดไปหน้าร้านค้า
+  // 3. ถ้า Login แล้วแต่จะไปหน้า Login อีก ให้ดีดกลับไปหน้าหลัก
+  if (user.value && to.path === '/login') {
+    return navigateTo(userRole === 'admin' ? '/dashboard' : '/shop')
+  }
+
+  // 4. ป้องกัน Customer เข้าหน้า Admin
+  const adminOnlyPaths = ['/dashboard', '/products', '/orders']
+  const isTargetAdminPage = adminOnlyPaths.some(p => to.path.startsWith(p))
+
+  if (isTargetAdminPage && userRole !== 'admin') {
+    console.warn("สิทธิ์ไม่พอ! ดีดออกไปหน้า Shop")
+    return navigateTo('/shop')
   }
 })

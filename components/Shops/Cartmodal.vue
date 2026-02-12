@@ -52,6 +52,7 @@ defineProps({
 defineEmits(['close', 'remove', 'update-qty', 'checkout'])
 
 const formatNumber = (num) => new Intl.NumberFormat('th-TH').format(num || 0)
+
 </script>
 
 <style scoped>

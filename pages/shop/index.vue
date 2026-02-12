@@ -130,7 +130,7 @@ import CartModal from "~/components/Shops/CartModal.vue";
 const { user } = useAuth();
 const { $supabase } = useNuxtApp();
 const { initAuth } = useAuth(); // เพิ่ม initAuth
-const userRoleCookie = useCookie('user-role'); // 👈 ดึงค่า Role จาก Cooki
+const userRoleCookie = useCookie("user-role"); // 👈 ดึงค่า Role จาก Cooki
 // 2. สถานะของ UI และข้อมูล
 const showMobileSidebar = ref(false);
 const isSidebarCollapsed = ref(false);
@@ -176,6 +176,9 @@ const fetchProducts = async () => {
   }
 };
 const handleCheckout = async () => {
+  // console.log(user.value.profile,'datas');
+  const userProfile = user.value.profile;
+  // return
   if (cart.value.length === 0) {
     alert("กรุณาเลือกสินค้าลงตะกร้าก่อนครับ");
     return;
@@ -184,7 +187,7 @@ const handleCheckout = async () => {
   try {
     loading.value = true;
 
-    // 1. สุ่มเลขที่ออเดอร์ (ตัวอย่าง: ORD-492831)
+    // 1. สร้างเลขที่ออเดอร์ (ตัวอย่าง: ORD-492831)
     const orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // 2. บันทึกข้อมูลลงตาราง 'orders' ใน Supabase
@@ -193,10 +196,14 @@ const handleCheckout = async () => {
       .insert([
         {
           order_number: orderNumber,
-          customer_name: userData.value.name, // ดึงจาก Computed userData
-          //   customer_phone: "0891563257",        // ข้อมูลตัวอย่างตามรูป
-          //   customer_address: "หมู่บ้านโคกะโหลก",   // ข้อมูลตัวอย่างตามรูป
-          total_price: cartTotal.value, // ราคารวมที่คำนวณจากตะกร้า
+          // ดึงชื่อจริง (full_name) จากข้อมูลโปรไฟล์ที่โหลดไว้
+          customer_name: userProfile?.full_name || userData.value.name, 
+          // ดึงเบอร์โทรและที่อยู่จากตาราง profiles
+          customer_phone: userProfile?.phone || "ไม่ระบุเบอร์โทร",
+          customer_address: userProfile?.address || "ไม่ระบุที่อยู่",
+          // ใช้ชื่อคอลัมน์ total_amount ให้ตรงกับในฐานข้อมูล
+          total: cartTotal.value, 
+          status: 'pending' // สถานะเริ่มต้นตามรูปตัวอย่าง
         },
       ])
       .select();
@@ -208,6 +215,7 @@ const handleCheckout = async () => {
 
     cart.value = []; // ล้างตะกร้าสินค้า
     isCartOpen.value = false; // ปิด Modal
+    
   } catch (error) {
     console.error("Error creating order:", error.message);
     alert("ไม่สามารถบันทึกคำสั่งซื้อได้: " + error.message);
@@ -257,8 +265,8 @@ const userData = computed(() => {
     name: user.value?.user_metadata?.full_name || "testuser",
     email: user.value?.email || "",
     avatar: "👤",
-    role: user.value?.user_metadata?.role || userRoleCookie.value || "customer" // 👈 ดึงจาก Cookie ถ้า User ยังไม่มา
-  }
+    role: user.value?.user_metadata?.role || userRoleCookie.value || "customer", // 👈 ดึงจาก Cookie ถ้า User ยังไม่มา
+  };
 });
 const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },

@@ -118,7 +118,7 @@ const isActive = (itemId: string) => {
     reports: '/reports',
     settings: '/settings',
     shop: '/shop',
-    'my-orders': '/my-orders'
+    myorders: '/my-orders'
   }
   return path === mapping[itemId]
 }
@@ -143,7 +143,7 @@ const handleItemClick = (item: MenuItem) => {
     reports: '/reports',
     settings: '/settings',
     shop: '/shop',            // เพิ่มสำหรับ User
-    'my-orders': '/my-orders' // เพิ่มสำหรับ User
+    myorders: '/my-orders' // เพิ่มสำหรับ User
   }
 
   if (routes[item.id]) {

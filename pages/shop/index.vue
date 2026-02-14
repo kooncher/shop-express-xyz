@@ -272,6 +272,8 @@ const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
   { id: "products", label: "สินค้า", icon: "📦", roles: ["admin"] },
   { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ["customer", "admin"] },
+  { id: "myorders", label: "คำสั่งซื้อของฉัน", icon: "📋", roles: ["customer"] },
+
   {
     id: "settings",
     label: "ตั้งค่า",

@@ -175,10 +175,11 @@ const fetchProducts = async () => {
     loading.value = false;
   }
 };
+const { createOrder } = useOrders(); // เรียกใช้ composable
+
 const handleCheckout = async () => {
-  // console.log(user.value.profile,'datas');
-  const userProfile = user.value.profile;
-  // return
+  const userProfile = user.value?.profile;
+  
   if (cart.value.length === 0) {
     alert("กรุณาเลือกสินค้าลงตะกร้าก่อนครับ");
     return;
@@ -187,34 +188,35 @@ const handleCheckout = async () => {
   try {
     loading.value = true;
 
-    // 1. สร้างเลขที่ออเดอร์ (ตัวอย่าง: ORD-492831)
-    const orderNumber = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+    // 1. เตรียมข้อมูลออเดอร์และรายการสินค้าให้ตรงกับ format ของ useOrders
+    const orderData = {
+      order_number: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+      customer_name: userProfile?.full_name || userData.value.name,
+      customer_phone: userProfile?.phone || "ไม่ระบุเบอร์โทร",
+      customer_address: userProfile?.address || "ไม่ระบุที่อยู่",
+      subtotal: cartTotal.value,
+      total: cartTotal.value,
+      status: 'pending',
+      payment_status: 'unpaid',
+      // ⚠️ จุดสำคัญ: ต้องส่ง items ไปด้วยเพื่อให้ createOrder เอาไปบันทึกลง order_items
+      items: cart.value.map(item => ({
+        product_id: item.id,      // ID จากตาราง products
+        product_name: item.name,
+        product_sku: item.sku || '',
+        quantity: item.quantity,
+        price: item.price
+      }))
+    };
 
-    // 2. บันทึกข้อมูลลงตาราง 'orders' ใน Supabase
-    const { data, error } = await $supabase
-      .from("orders")
-      .insert([
-        {
-          order_number: orderNumber,
-          // ดึงชื่อจริง (full_name) จากข้อมูลโปรไฟล์ที่โหลดไว้
-          customer_name: userProfile?.full_name || userData.value.name, 
-          // ดึงเบอร์โทรและที่อยู่จากตาราง profiles
-          customer_phone: userProfile?.phone || "ไม่ระบุเบอร์โทร",
-          customer_address: userProfile?.address || "ไม่ระบุที่อยู่",
-          // ใช้ชื่อคอลัมน์ total_amount ให้ตรงกับในฐานข้อมูล
-          total: cartTotal.value, 
-          status: 'pending' // สถานะเริ่มต้นตามรูปตัวอย่าง
-        },
-      ])
-      .select();
+    // 2. เรียกใช้ createOrder ตัวเดียว จบทั้ง 2 ตาราง
+    const { data, error } = await createOrder(orderData);
 
     if (error) throw error;
 
-    // 3. แจ้งเตือนและล้างข้อมูลหลังบันทึกสำเร็จ
-    alert(`ยืนยันการสั่งซื้อสำเร็จ! เลขที่ออเดอร์: ${orderNumber}`);
-
-    cart.value = []; // ล้างตะกร้าสินค้า
-    isCartOpen.value = false; // ปิด Modal
+    // 3. แจ้งเตือนและล้างข้อมูล
+    alert(`ยืนยันการสั่งซื้อสำเร็จ! เลขที่ออเดอร์: ${orderData.order_number}`);
+    cart.value = []; 
+    isCartOpen.value = false;
     
   } catch (error) {
     console.error("Error creating order:", error.message);

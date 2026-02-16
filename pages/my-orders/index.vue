@@ -184,9 +184,12 @@
 </table>
 
 
-
-
-
+<PaymentModal 
+  v-if="showPaymentModal" 
+  :order="selectedOrderForPayment"
+  @close="showPaymentModal = false"
+  @success="handlePaymentSuccess(selectedOrderForPayment?.id)" 
+/>
   
           </div>
         </div>
@@ -211,12 +214,11 @@
 
     <!-- Delete Confirmation Modal -->
     <ConfirmModal
-      v-if="showDeleteConfirm"
-      title="ยืนยันการลบคำสั่งซื้อ"
-      :message="`คุณต้องการลบคำสั่งซื้อ &quot;${orderToDelete?.order_number}&quot; ใช่หรือไม่?`"
-      @confirm="handleDelete"
-      @cancel="showDeleteConfirm = false"
-    />
+  v-if="showDeleteConfirm"
+  title="ยืนยันการยกเลิกคำสั่งซื้อ" 
+  :message="`คุณต้องการยกเลิกคำสั่งซื้อ &quot;${orderToDelete?.order_number}&quot; ใช่หรือไม่?`"
+  @confirm="handleCancelOrder"  @cancel="showDeleteConfirm = false"
+/>
   </div>
 </template>
 
@@ -224,15 +226,14 @@
 import OrderModal from '~/components/Orders/OrderModal.vue'
 import OrderDetailModal from '~/components/Orders/OrderDetailModal.vue'
 import ConfirmModal from '~/components/Orders/ConfirmModal.vue'
-
+import PaymentModal from '~/components/Shops/PaymentModal.vue'
 
 definePageMeta({
   middleware: 'auth'
 })
 
 const { user } = useAuth()
-const { getOrders, deleteOrder } = useOrders()
-
+const { getOrders, deleteOrder,updateOrderStatus,updatePaymentStatus } = useOrders()
 const loading = ref(true)
 const orders = ref([])
 const searchQuery = ref('')
@@ -240,6 +241,8 @@ const filterStatus = ref('')
 const filterPaymentStatus = ref('')
 const showMobileSidebar = ref(false)
 const isSidebarCollapsed = ref(false)
+const showPaymentModal = ref(false)
+const selectedOrderForPayment = ref(null)
 
 // Modal states - ส่วนที่หายไป
 const showModal = ref(false)
@@ -290,31 +293,55 @@ const loadOrders = async () => {
   
   loading.value = false
 }
-
+const payOrder = (order) => {
+  selectedOrderForPayment.value = order
+  showPaymentModal.value = true
+}
 // ฟังก์ชันสำหรับกดยกเลิก
 const confirmCancel = (order: any) => {
   // ใช้ ConfirmModal เดิมที่คุณมีอยู่แล้ว
   orderToDelete.value = order 
   showDeleteConfirm.value = true
 }
+// ในหน้า my-orders.vue
+const handlePaymentSuccess = async (orderId: string | undefined) => {
+  if (!orderId) return; // เช็คเพื่อความชัวร์อีกรอบ
 
+  try {
+
+    const { error } = await updatePaymentStatus(orderId, 'paid');
+
+    if (error) throw error;
+
+    // 2. แสดง Notification (ถ้ามี)
+    // toast.success('ชำระเงินเรียบร้อยแล้ว');
+
+    // 3. โหลดข้อมูลใหม่เพื่ออัปเดต UI ในตาราง
+    await loadOrders(); 
+
+  } catch (err) {
+    console.error('Update payment failed:', err);
+    alert('เกิดข้อผิดพลาดในการอัปเดตสถานะการชำระเงิน');
+  }
+};
 const handleCancelOrder = async () => {
   if (!orderToDelete.value) return
 
   loading.value = true
   try {
-    // อัปเดตสถานะใน Database ผ่าน Supabase
-    const { error } = await client
-      .from('orders')
-      .update({ status: 'cancelled' })
-      .eq('id', orderToDelete.value.id)
+    // ใช้ฟังก์ชันจาก useOrders ที่คุณเตรียมไว้แล้ว
+    const { error } = await updateOrderStatus(orderToDelete.value.id, 'cancelled')
 
     if (!error) {
-      await loadOrders() // โหลดข้อมูลใหม่
-      showDeleteConfirm.value = false
+      await loadOrders() // โหลดข้อมูลใหม่เพื่ออัปเดต UI ให้ Badge กลายเป็นสีแดง (ยกเลิก)
+      showDeleteConfirm.value = false // ปิด Modal
+      orderToDelete.value = null // ล้างค่า
+    } else {
+      throw error
     }
   } catch (err) {
     console.error('Error cancelling order:', err)
+    alert('ไม่สามารถยกเลิกคำสั่งซื้อได้ กรุณาลองใหม่อีกครั้ง')
   } finally {
     loading.value = false
   }

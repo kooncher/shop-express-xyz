@@ -1,9 +1,9 @@
 <template>
   <div class="invoice-print-container">
     <!-- ปุ่มเปิด Invoice -->
-    <button @click="openInvoice" class="btn-generate-invoice">
+    <!-- <button @click="openInvoice" class="btn-generate-invoice" v-if="isAdmin">
       📄 สร้างใบสั่งซื้อ
-    </button>
+    </button> -->
 
     <!-- Invoice Page (Full Screen) -->
     <teleport to="body">
@@ -20,7 +20,10 @@ import InvoicePage from './InvoicePDF.vue'
 interface Props {
   order: any
 }
+const { user } = useAuth() // ดึงข้อมูล user ที่ login อยู่
 
+// เช็คว่าเป็น Admin หรือไม่
+const isAdmin = computed(() => user.value?.profile?.role === 'admin')
 const props = defineProps<Props>()
 
 const showInvoice = ref(false)

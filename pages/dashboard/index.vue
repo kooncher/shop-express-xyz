@@ -34,9 +34,9 @@
               ยินดีต้อนรับกลับมา, {{ userData.name }}!
             </p>
           </div>
-          <button @click="handleLogout" class="logout-btn">
+          <!-- <button @click="handleLogout" class="logout-btn">
             🚪 ออกจากระบบ
-          </button>
+          </button> -->
         </div>
 
         <div v-if="loading" class="stats-grid">

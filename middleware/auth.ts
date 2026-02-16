@@ -2,17 +2,19 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   if (process.server) return
 
   const { user, initAuth } = useAuth()
-  const userRole = useCookie('user-role').value
 
-  // 1. รอโหลด Auth
+  // 1. รอโหลด Auth และข้อมูล Profile
   if (!user.value) await initAuth()
 
-  // 2. ถ้ายังไม่ได้ Login ให้ไปหน้า Login เท่านั้น
+  // ดึง Role จาก State ของ user (ซึ่งควรจะถูกอัปเดตตอน initAuth)
+  const userRole = user.value?.profile?.role 
+
+  // 2. ถ้ายังไม่ได้ Login
   if (!user.value && to.path !== '/login') {
     return navigateTo('/login')
   }
 
-  // 3. ถ้า Login แล้วแต่จะไปหน้า Login อีก ให้ดีดกลับไปหน้าหลัก
+  // 3. ถ้า Login แล้วจะไปหน้า Login
   if (user.value && to.path === '/login') {
     return navigateTo(userRole === 'admin' ? '/dashboard' : '/shop')
   }
@@ -22,7 +24,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   const isTargetAdminPage = adminOnlyPaths.some(p => to.path.startsWith(p))
 
   if (isTargetAdminPage && userRole !== 'admin') {
-    console.warn("สิทธิ์ไม่พอ! ดีดออกไปหน้า Shop")
+    console.warn("สิทธิ์ไม่พอ! ปัจจุบันเป็น:", userRole)
     return navigateTo('/shop')
   }
 })

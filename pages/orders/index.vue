@@ -34,10 +34,10 @@
             <p class="page-subtitle">จัดการคำสั่งซื้อทั้งหมดในระบบ</p>
           </div>
           
-          <button @click="openCreateModal" class="btn-primary">
+          <!-- <button @click="openCreateModal" class="btn-primary">
             <span>➕</span>
             <span>สร้างคำสั่งซื้อ</span>
-          </button>
+          </button> -->
         </div>
 
         <!-- Stats -->
@@ -124,68 +124,49 @@
             </button>
           </div>
 
-          <div v-else class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr v-for="order in orders" :key="order.id">
-  <td data-label="เลขที่" class="font-semibold">{{ order.order_number }}</td>
-  <td data-label="ลูกค้า">{{ order.customer_name }}</td>
-  <td data-label="เบอร์โทร" class="text-muted">{{ order.customer_phone || '-' }}</td>
-  <td data-label="ยอดรวม" class="font-semibold">฿{{ formatNumber(order.total) }}</td>
-  <td data-label="สถานะ">
-    <span :class="['badge', getStatusClass(order.status)]">
-      {{ getStatusLabel(order.status) }}
-    </span>
-  </td>
-  <td data-label="การชำระเงิน">
-    <span :class="['badge', getPaymentStatusClass(order.payment_status)]">
-      {{ getPaymentStatusLabel(order.payment_status) }}
-    </span>
-  </td>
-  <td data-label="วันที่สั่ง" class="text-muted">{{ formatDate(order.created_at) }}</td>
-  <td data-label="จัดการ">
-    <div class="action-buttons">
-      <button @click="viewOrder(order)" class="btn-icon btn-view">👁️</button>
-      <button @click="openEditModal(order)" class="btn-icon btn-edit">✏️</button>
-      <button @click="confirmDelete(order)" class="btn-icon btn-delete">🗑️</button>
-    </div>
-  </td>
-</tr>
-              </thead>
-              <tbody>
-                <tr v-for="order in orders" :key="order.id">
-                  <td class="font-semibold">{{ order.order_number }}</td>
-                  <td>{{ order.customer_name }}</td>
-                  <td class="text-muted">{{ order.customer_phone || '-' }}</td>
-                  <td class="font-semibold">฿{{ formatNumber(order.total) }}</td>
-                  <td>
-                    <span :class="['badge', getStatusClass(order.status)]">
-                      {{ getStatusLabel(order.status) }}
-                    </span>
-                  </td>
-                  <td>
-                    <span :class="['badge', getPaymentStatusClass(order.payment_status)]">
-                      {{ getPaymentStatusLabel(order.payment_status) }}
-                    </span>
-                  </td>
-                  <td class="text-muted">{{ formatDate(order.created_at) }}</td>
-                  <td>
-                    <div class="action-buttons">
-                      <button @click="viewOrder(order)" class="btn-icon btn-view" title="ดูรายละเอียด">
-                        👁️
-                      </button>
-                      <button @click="openEditModal(order)" class="btn-icon btn-edit" title="แก้ไข">
-                        ✏️
-                      </button>
-                      <button @click="confirmDelete(order)" class="btn-icon btn-delete" title="ลบ">
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+    <div v-else class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>เลขที่</th>
+        <th>ลูกค้า</th>
+        <th>เบอร์โทร</th>
+        <th>ยอดรวม</th>
+        <th>สถานะ</th>
+        <th>การชำระเงิน</th>
+        <th>วันที่สั่ง</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="order in orders" :key="order.id">
+        <td data-label="เลขที่" class="font-semibold">{{ order.order_number }}</td>
+        <td data-label="ลูกค้า">{{ order.customer_name }}</td>
+        <td data-label="เบอร์โทร" class="text-muted">{{ order.customer_phone || '-' }}</td>
+        <td data-label="ยอดรวม" class="font-semibold">฿{{ formatNumber(order.total) }}</td>
+        <td data-label="สถานะ">
+          <span :class="['badge', getStatusClass(order.status)]">
+            {{ getStatusLabel(order.status) }}
+          </span>
+        </td>
+        <td data-label="การชำระเงิน">
+          <span :class="['badge', getPaymentStatusClass(order.payment_status)]">
+            {{ getPaymentStatusLabel(order.payment_status) }}
+          </span>
+        </td>
+        <td data-label="วันที่สั่ง" class="text-muted">{{ formatDate(order.created_at) }}</td>
+        <td data-label="จัดการ">
+          <div class="action-buttons">
+            <button @click="viewOrder(order)" class="btn-icon btn-view">👁️</button>
+            <button @click="openEditModal(order)" class="btn-icon btn-edit">✏️</button>
+            <button @click="confirmDelete(order)" class="btn-icon btn-delete">🗑️</button>
           </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
         </div>
       </div>
     </main>

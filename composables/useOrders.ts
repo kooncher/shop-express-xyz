@@ -36,29 +36,21 @@ export const useOrders = () => {
   }
 
   // Get single order with items
-  const getOrder = async (id: string) => {
-    try {
-      const { data: order, error: orderError } = await $supabase
-        .from('orders')
-        .select('*')
-        .eq('id', id)
-        .single()
+const getOrder = async (id: string) => {
+  try {
+    const { data, error } = await $supabase
+      .from('orders')
+      .select('*, items:order_items(*)') // ดึง order_items มาในชื่อ items
+      .eq('id', id)
+      .single()
 
-      if (orderError) throw orderError
-
-      const { data: items, error: itemsError } = await $supabase
-        .from('order_items')
-        .select('*')
-        .eq('order_id', id)
-
-      if (itemsError) throw itemsError
-
-      return { data: { ...order, items }, error: null }
-    } catch (error) {
-      console.error('Get order error:', error)
-      return { data: null, error }
-    }
+    if (error) throw error
+    return { data, error: null }
+  } catch (error) {
+    console.error('Get order error:', error)
+    return { data: null, error }
   }
+}
 
   // Create order - แก้ไขส่วนนี้
   const createOrder = async (orderData: any) => {

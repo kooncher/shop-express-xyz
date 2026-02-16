@@ -41,10 +41,10 @@
               <span class="info-label">ที่อยู่จัดส่ง:</span>
               <span class="info-value">{{ orderData.customer_address || '-' }}</span>
             </div>
-            <div class="info-item">
+            <!-- <div class="info-item">
               <span class="info-label">วิธีชำระเงิน:</span>
               <span class="info-value">{{ orderData.payment_method || '-' }}</span>
-            </div>
+            </div> -->
           </div>
         </div>
 
@@ -65,10 +65,10 @@
               <tbody>
                 <tr v-for="item in orderData.items" :key="item.id">
                   <td>{{ item.product_name }}</td>
-                  <td class="text-muted">{{ item.product_sku || '-' }}</td>
-                  <td class="text-right">฿{{ formatNumber(item.price) }}</td>
-                  <td class="text-center">{{ item.quantity }}</td>
-                  <td class="text-right font-semibold">฿{{ formatNumber(item.subtotal) }}</td>
+                  <td class="">{{ item.product_sku || '-' }}</td>
+                  <td class="">฿{{ formatNumber(item.price) }}</td>
+                  <td class="">{{ item.quantity }}</td>
+                  <td class=" font-semibold">฿{{ formatNumber(item.subtotal) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -106,41 +106,62 @@
         </div>
 
         <!-- Update Status (hidden when printing) -->
-        <div class="section no-print">
-          <h3 class="section-title">อัพเดทสถานะ</h3>
-          <div class="status-update-grid">
-            <div class="form-group">
-              <label class="form-label">สถานะคำสั่งซื้อ</label>
-              <select v-model="newStatus" class="form-select">
-                <option value="pending">รอดำเนินการ</option>
-                <option value="confirmed">ยืนยันแล้ว</option>
-                <option value="processing">กำลังเตรียมสินค้า</option>
-                <option value="shipping">กำลังจัดส่ง</option>
-                <option value="completed">สำเร็จแล้ว</option>
-                <option value="cancelled">ยกเลิก</option>
-              </select>
-            </div>
+   <div class="section no-print">
+  <h3 class="section-title">สถานะปัจจุบัน</h3>
+  
+  <div v-if="isAdmin" class="status-update-grid">
+    <div class="form-group">
+      <label class="form-label">สถานะคำสั่งซื้อ</label>
+      <select v-model="newStatus" class="form-select">
+        <option value="pending">รอดำเนินการ</option>
+        <option value="confirmed">ยืนยันแล้ว</option>
+        <option value="processing">กำลังเตรียมสินค้า</option>
+        <option value="shipping">กำลังจัดส่ง</option>
+        <option value="completed">สำเร็จแล้ว</option>
+        <option value="cancelled">ยกเลิก</option>
+      </select>
+    </div>
 
-            <div class="form-group">
-              <label class="form-label">สถานะการชำระเงิน</label>
-              <select v-model="newPaymentStatus" class="form-select">
-                <option value="unpaid">ยังไม่ชำระ</option>
-                <option value="paid">ชำระแล้ว</option>
-                <option value="refunded">คืนเงินแล้ว</option>
-              </select>
-            </div>
+    <div class="form-group">
+      <label class="form-label">สถานะการชำระเงิน</label>
+      <select v-model="newPaymentStatus" class="form-select">
+        <option value="unpaid">ยังไม่ชำระ</option>
+        <option value="paid">ชำระแล้ว</option>
+        <option value="refunded">คืนเงินแล้ว</option>
+      </select>
+    </div>
 
-            <div class="form-group full-width">
-              <button
-                @click="updateStatus"
-                :disabled="!hasStatusChanged"
-                class="btn-update"
-              >
-                {{ updating ? 'กำลังอัพเดท...' : 'อัพเดทสถานะ' }}
-              </button>
-            </div>
-          </div>
-        </div>
+    <div class="form-group full-width">
+      <button
+        @click="updateStatus"
+        :disabled="!hasStatusChanged || updating"
+        class="btn-update"
+      >
+        {{ updating ? 'กำลังอัพเดท...' : 'บันทึกการเปลี่ยนแปลง' }}
+      </button>
+    </div>
+  </div>
+
+  <div v-else class="status-display-only">
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">สถานะคำสั่งซื้อ:</span>
+        <span :class="['badge', 'badge-lg', getStatusClass(orderData.status)]">
+          {{ getStatusLabel(orderData.status) }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">สถานะการชำระเงิน:</span>
+        <span :class="['badge', 'badge-lg', getPaymentStatusClass(orderData.payment_status)]">
+          {{ getPaymentStatusLabel(orderData.payment_status) }}
+        </span>
+      </div>
+    </div>
+    
+    <p v-if="orderData.payment_status === 'paid' && orderData.status === 'pending'" class="helper-text">
+      ✨ ได้รับยอดชำระแล้ว อยู่ระหว่างรอแอดมินตรวจสอบและเตรียมจัดส่ง
+    </p>
+  </div>
       </div>
 
       <div class="modal-footer no-print">
@@ -152,6 +173,7 @@
         </button>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -169,7 +191,10 @@ const emit = defineEmits<{
 }>()
 
 const { getOrder, updateOrderStatus, updatePaymentStatus } = useOrders()
+const { user } = useAuth() // ดึงข้อมูล user ที่ login อยู่
 
+// เช็คว่าเป็น Admin หรือไม่
+const isAdmin = computed(() => user.value?.profile?.role === 'admin')
 const orderData = ref({
   order_number: '',
   customer_name: '',
@@ -824,5 +849,29 @@ onMounted(() => {
   .btn-close {
     width: 100%;
   }
+}
+
+
+/* แสดงผลหน้าuser */
+
+.status-display-only {
+  background: #f8fafc;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px dashed #cbd5e1;
+}
+
+.helper-text {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ปรับให้ badge ในหน้าดูรายละเอียดเด่นขึ้น */
+.badge-lg {
+  width: fit-content;
+  text-align: center;
 }
 </style>

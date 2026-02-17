@@ -226,12 +226,12 @@
                 </div>
               </div>
               <button type="button" @click="requestRefund" class="btn-refund">
-                ↩ ขอคืนเงิน
+                ↩ คืนเงิน
               </button>
             </div>
 
             <!-- ถ้ายังไม่ชำระ แสดงปุ่มเลือกช่องทาง -->
-            <div v-else class="payment-buttons">
+            <!-- <div v-else class="payment-buttons">
               <button
                 type="button"
                 @click="openPayment('โอนเงิน')"
@@ -277,7 +277,7 @@
               >
                 <span>💵</span>เงินสด
               </button>
-            </div>
+            </div> -->
           </div>
         </div>
 

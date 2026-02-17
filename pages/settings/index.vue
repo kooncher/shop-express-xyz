@@ -155,7 +155,7 @@
           </div>
 
           <!-- Shop Tab -->
-          <div v-if="activeTab === 'shop'" class="tab-panel">
+          <div v-if="activeTab === 'shop'" class="tab-panel" >
             <div class="card">
               <h2 class="card-title">ข้อมูลร้านค้า</h2>
               
@@ -343,6 +343,8 @@ definePageMeta({
 })
 
 const { user } = useAuth()
+const isAdmin = computed(() => user.value?.profile?.role === 'admin')
+
 const { 
   getUserProfile, 
   updateUserProfile, 
@@ -354,15 +356,23 @@ const {
 const activeTab = ref('profile')
 const showMobileSidebar = ref(false)
 const isSidebarCollapsed = ref(false)
-const { initAuth } = useAuth(); // เพิ่ม initAuth
 const userRoleCookie = useCookie('user-role'); // 👈 ดึงค่า Role จาก Cooki
 
-const tabs = [
-  { id: 'profile', label: 'โปรไฟล์', icon: '👤' },
-  { id: 'shop', label: 'ข้อมูลร้าน', icon: '🏪' },
-//   { id: 'notifications', label: 'การแจ้งเตือน', icon: '🔔' },
-//   { id: 'system', label: 'ระบบ', icon: '⚙️' }
-]
+// ปรับ tabs ให้เป็น computed
+const tabs = computed(() => {
+  // เริ่มต้นด้วยแท็บพื้นฐานที่ทุกคนต้องเห็น
+  const menuItems = [
+    { id: 'profile', label: 'โปรไฟล์', icon: '👤' }
+  ]
+
+  // ถ้าเป็น admin ให้เพิ่มแท็บข้อมูลร้านเข้าไป
+  if (isAdmin.value) {
+    menuItems.push({ id: 'shop', label: 'ข้อมูลร้าน', icon: '🏪' })
+  }
+
+  return menuItems
+})
+
 
 const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
@@ -371,6 +381,7 @@ const menuItems = [
   { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] }, // เฉพาะ Admin
   { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },   // เฉพาะ Admin
     { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ["customer"] },
+  { id: "myorders", label: "คำสั่งซื้อของฉัน", icon: "📋", roles: ["customer"] },
   { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin",'customer'] },   // เฉพาะ Admin
 
 

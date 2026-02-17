@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-container">
-
     <button class="floating-hamburger-btn" @click="toggleMobileSidebar">
       <div class="hamburger-icon-wrapper">
         <span :class="{ 'line-open': showMobileSidebar }"></span>
@@ -9,9 +8,9 @@
       </div>
     </button>
 
-       <!-- Mobile Overlay -->
-    <div 
-      v-if="showMobileSidebar" 
+    <!-- Mobile Overlay -->
+    <div
+      v-if="showMobileSidebar"
       class="mobile-overlay"
       @click="closeMobileSidebar"
     ></div>
@@ -25,7 +24,10 @@
       @close-mobile="closeMobileSidebar"
     />
 
-    <main class="main-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <main
+      class="main-content"
+      :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+    >
       <div class="content-wrapper">
         <!-- Header -->
         <div class="page-header">
@@ -33,7 +35,7 @@
             <h1 class="page-title">คำสั่งซื้อของฉัน</h1>
             <p class="page-subtitle">รายการคำสั่งซื้อที่คุณเคยสั่งซื้อไว้</p>
           </div>
-          
+
           <!-- <button @click="openCreateModal" class="btn-primary">
             <span>➕</span>
             <span>สร้างคำสั่งซื้อ</span>
@@ -53,7 +55,9 @@
           <div class="stat-card">
             <div class="stat-info">
               <p class="stat-label">รอดำเนินการ</p>
-              <p class="stat-value">{{ getOrdersByStatus('pending').length }}</p>
+              <p class="stat-value">
+                {{ getOrdersByStatus("pending").length }}
+              </p>
             </div>
             <div class="stat-icon pending">⏳</div>
           </div>
@@ -61,7 +65,9 @@
           <div class="stat-card">
             <div class="stat-info">
               <p class="stat-label">กำลังจัดส่ง</p>
-              <p class="stat-value">{{ getOrdersByStatus('shipping').length }}</p>
+              <p class="stat-value">
+                {{ getOrdersByStatus("shipping").length }}
+              </p>
             </div>
             <div class="stat-icon shipping">🚚</div>
           </div>
@@ -69,7 +75,9 @@
           <div class="stat-card">
             <div class="stat-info">
               <p class="stat-label">สำเร็จแล้ว</p>
-              <p class="stat-value">{{ getOrdersByStatus('completed').length }}</p>
+              <p class="stat-value">
+                {{ getOrdersByStatus("completed").length }}
+              </p>
             </div>
             <div class="stat-icon completed">✅</div>
           </div>
@@ -89,7 +97,11 @@
               />
             </div>
 
-            <select v-model="filterStatus" @change="loadOrders" class="filter-select">
+            <select
+              v-model="filterStatus"
+              @change="loadOrders"
+              class="filter-select"
+            >
               <option value="">ทุกสถานะ</option>
               <option value="pending">รอดำเนินการ</option>
               <option value="confirmed">ยืนยันแล้ว</option>
@@ -99,7 +111,11 @@
               <option value="cancelled">ยกเลิก</option>
             </select>
 
-            <select v-model="filterPaymentStatus" @change="loadOrders" class="filter-select">
+            <select
+              v-model="filterPaymentStatus"
+              @change="loadOrders"
+              class="filter-select"
+            >
               <option value="">ทุกสถานะการชำระ</option>
               <option value="unpaid">ยังไม่ชำระ</option>
               <option value="paid">ชำระแล้ว</option>
@@ -125,72 +141,93 @@
           </div>
 
           <div v-else class="table-container">
-    <table class="data-table">
-  <thead>
-    <tr>
-      <th>เลขที่คำสั่งซื้อ</th>
-      <th>ลูกค้า</th>
-      <th>เบอร์โทร</th>
-      <th>ยอดรวม</th>
-      <th>สถานะ</th>
-      <th>การชำระเงิน</th>
-      <th>วันที่สั่ง</th>
-      <th>จัดการ</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr v-for="order in orders" :key="order.id">
-      <td data-label="เลขที่" class="font-semibold">{{ order.order_number }}</td>
-      <td data-label="ลูกค้า">{{ order.customer_name }}</td>
-      <td data-label="เบอร์โทร" class="text-muted">{{ order.customer_phone || '-' }}</td>
-      <td data-label="ยอดรวม" class="font-semibold">฿{{ formatNumber(order.total) }}</td>
-      <td data-label="สถานะ">
-        <span :class="['badge', getStatusClass(order.status)]">
-          {{ getStatusLabel(order.status) }}
-        </span>
-      </td>
-      <td data-label="การชำระเงิน">
-        <span :class="['badge', getPaymentStatusClass(order.payment_status)]">
-          {{ getPaymentStatusLabel(order.payment_status) }}
-        </span>
-      </td>
-      <td data-label="วันที่สั่ง" class="text-muted">{{ formatDate(order.created_at) }}</td>
-    <td data-label="จัดการ">
-  <div class="action-buttons">
-    <button @click="viewOrder(order)" class="btn-icon btn-view" title="ดูรายละเอียด">
-      👁️
-    </button>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>เลขที่คำสั่งซื้อ</th>
+                  <th>ลูกค้า</th>
+                  <th>เบอร์โทร</th>
+                  <th>ยอดรวม</th>
+                  <th>สถานะ</th>
+                  <th>การชำระเงิน</th>
+                  <th>วันที่สั่ง</th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="order in orders" :key="order.id">
+                  <td data-label="เลขที่" class="font-semibold">
+                    {{ order.order_number }}
+                  </td>
+                  <td data-label="ลูกค้า">{{ order.customer_name }}</td>
+                  <td data-label="เบอร์โทร" class="text-muted">
+                    {{ order.customer_phone || "-" }}
+                  </td>
+                  <td data-label="ยอดรวม" class="font-semibold">
+                    ฿{{ formatNumber(order.total) }}
+                  </td>
+                  <td data-label="สถานะ">
+                    <span :class="['badge', getStatusClass(order.status)]">
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  </td>
+                  <td data-label="การชำระเงิน">
+                    <span
+                      :class="[
+                        'badge',
+                        getPaymentStatusClass(order.payment_status),
+                      ]"
+                    >
+                      {{ getPaymentStatusLabel(order.payment_status) }}
+                    </span>
+                  </td>
+                  <td data-label="วันที่สั่ง" class="text-muted">
+                    {{ formatDate(order.created_at) }}
+                  </td>
+                  <td data-label="จัดการ">
+                    <div class="action-buttons">
+                      <button
+                        @click="viewOrder(order)"
+                        class="btn-icon btn-view"
+                        title="ดูรายละเอียด"
+                      >
+                        👁️
+                      </button>
 
-    <button 
-      v-if="order.payment_status === 'unpaid' && order.status !== 'cancelled'" 
-      @click="payOrder(order)" 
-      class="btn-pay-now"
-    >
-      💳 ชำระเงิน
-    </button>
+                      <button
+                        v-if="
+                          order.payment_status === 'unpaid' &&
+                          order.status !== 'cancelled'
+                        "
+                        @click="payOrder(order)"
+                        class="btn-pay-now"
+                      >
+                        💳 ชำระเงิน
+                      </button>
 
-    <button 
-      v-if="order.status === 'pending' && order.payment_status === 'unpaid'" 
-      @click="confirmCancel(order)" 
-      class="btn-icon btn-delete" 
-      title="ยกเลิกคำสั่งซื้อ"
-    >
-      🚫
-    </button>
-  </div>
-</td>
-    </tr>
-  </tbody>
-</table>
+                      <button
+                        v-if="
+                          order.status === 'pending' &&
+                          order.payment_status === 'unpaid'
+                        "
+                        @click="confirmCancel(order)"
+                        class="btn-icon btn-delete"
+                        title="ยกเลิกคำสั่งซื้อ"
+                      >
+                        🚫
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
-
-<PaymentModal 
-  v-if="showPaymentModal" 
-  :order="selectedOrderForPayment"
-  @close="showPaymentModal = false"
-  @success="handlePaymentSuccess(selectedOrderForPayment?.id)" 
-/>
-  
+            <PaymentModal
+              v-if="showPaymentModal"
+              :order="selectedOrderForPayment"
+              @close="showPaymentModal = false"
+              @success="handlePaymentSuccess(selectedOrderForPayment?.id)"
+            />
           </div>
         </div>
       </div>
@@ -214,102 +251,108 @@
 
     <!-- Delete Confirmation Modal -->
     <ConfirmModal
-  v-if="showDeleteConfirm"
-  title="ยืนยันการยกเลิกคำสั่งซื้อ" 
-  :message="`คุณต้องการยกเลิกคำสั่งซื้อ &quot;${orderToDelete?.order_number}&quot; ใช่หรือไม่?`"
-  @confirm="handleCancelOrder"  @cancel="showDeleteConfirm = false"
-/>
+      v-if="showDeleteConfirm"
+      title="ยืนยันการยกเลิกคำสั่งซื้อ"
+      :message="`คุณต้องการยกเลิกคำสั่งซื้อ &quot;${orderToDelete?.order_number}&quot; ใช่หรือไม่?`"
+      @confirm="handleCancelOrder"
+      @cancel="showDeleteConfirm = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import OrderModal from '~/components/Orders/OrderModal.vue'
-import OrderDetailModal from '~/components/Orders/OrderDetailModal.vue'
-import ConfirmModal from '~/components/Orders/ConfirmModal.vue'
-import PaymentModal from '~/components/Shops/PaymentModal.vue'
+import OrderModal from "~/components/Orders/OrderModal.vue";
+import OrderDetailModal from "~/components/Orders/OrderDetailModal.vue";
+import ConfirmModal from "~/components/Orders/ConfirmModal.vue";
+import PaymentModal from "~/components/Shops/PaymentModal.vue";
 
 definePageMeta({
-  middleware: 'auth'
-})
+  middleware: "auth",
+});
 
-const { user } = useAuth()
-const { getOrders, deleteOrder,updateOrderStatus,updatePaymentStatus } = useOrders()
-const loading = ref(true)
-const orders = ref([])
-const searchQuery = ref('')
-const filterStatus = ref('')
-const filterPaymentStatus = ref('')
-const showMobileSidebar = ref(false)
-const isSidebarCollapsed = ref(false)
-const showPaymentModal = ref(false)
-const selectedOrderForPayment = ref(null)
+const { user } = useAuth();
+const { getOrders, deleteOrder, updateOrderStatus, updatePaymentStatus } =
+  useOrders();
+const loading = ref(true);
+const orders = ref([]);
+const searchQuery = ref("");
+const filterStatus = ref("");
+const filterPaymentStatus = ref("");
+const showMobileSidebar = ref(false);
+const isSidebarCollapsed = ref(false);
+const showPaymentModal = ref(false);
+const selectedOrderForPayment = ref(null);
 
 // Modal states - ส่วนที่หายไป
-const showModal = ref(false)
-const showDetailModal = ref(false)
-const selectedOrder = ref(null)
-const showDeleteConfirm = ref(false)
-const orderToDelete = ref(null)
+const showModal = ref(false);
+const showDetailModal = ref(false);
+const selectedOrder = ref(null);
+const showDeleteConfirm = ref(false);
+const orderToDelete = ref(null);
 
 const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
   { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ["customer"] },
-  { id: "myorders", label: "คำสั่งซื้อของฉัน", icon: "📋", roles: ["customer"] },
+  {
+    id: "myorders",
+    label: "คำสั่งซื้อของฉัน",
+    icon: "📋",
+    roles: ["customer"],
+  },
   { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["customer"] },
-
 ];
 
 const userData = computed(() => ({
-  name: user.value?.profile?.full_name || 'ผู้ใช้งาน',
-  email: user.value?.email || '',
-  avatar: '👤'
-}))
+  name: user.value?.profile?.full_name || "ผู้ใช้งาน",
+  email: user.value?.email || "",
+  avatar: "👤",
+}));
 
 // Load orders
 const loadOrders = async () => {
-  loading.value = true
-  
+  loading.value = true;
+
   // 1. ตรวจสอบก่อนว่ามี User Login อยู่จริงไหม (Safety First)
   if (!user.value) {
-    loading.value = false
-    return
+    loading.value = false;
+    return;
   }
 
-  const filters: any = {}
-  if (filterStatus.value) filters.status = filterStatus.value
-  if (filterPaymentStatus.value) filters.payment_status = filterPaymentStatus.value
-  if (searchQuery.value) filters.search = searchQuery.value
+  const filters: any = {};
+  if (filterStatus.value) filters.status = filterStatus.value;
+  if (filterPaymentStatus.value)
+    filters.payment_status = filterPaymentStatus.value;
+  if (searchQuery.value) filters.search = searchQuery.value;
 
   // 2. ส่ง user_id (หรือ id ของผู้ใช้) เข้าไปในฟังก์ชัน getOrders
   // หมายเหตุ: คุณต้องไปปรับที่ useOrders ให้รับค่า userId ไปกรองใน .eq('user_id', userId) ด้วยครับ
   const { data, error } = await getOrders({
     ...filters,
-    userId: user.value.id // ส่ง ID ของคนที่ Login อยู่ไป
-  })
-  
+    userId: user.value.id, // ส่ง ID ของคนที่ Login อยู่ไป
+  });
+
   if (!error && data) {
-    orders.value = data
+    orders.value = data;
   }
-  
-  loading.value = false
-}
+
+  loading.value = false;
+};
 const payOrder = (order) => {
-  selectedOrderForPayment.value = order
-  showPaymentModal.value = true
-}
+  selectedOrderForPayment.value = order;
+  showPaymentModal.value = true;
+};
 // ฟังก์ชันสำหรับกดยกเลิก
 const confirmCancel = (order: any) => {
   // ใช้ ConfirmModal เดิมที่คุณมีอยู่แล้ว
-  orderToDelete.value = order 
-  showDeleteConfirm.value = true
-}
+  orderToDelete.value = order;
+  showDeleteConfirm.value = true;
+};
 // ในหน้า my-orders.vue
 const handlePaymentSuccess = async (orderId: string | undefined) => {
   if (!orderId) return; // เช็คเพื่อความชัวร์อีกรอบ
 
   try {
-
-    const { error } = await updatePaymentStatus(orderId, 'paid');
+    const { error } = await updatePaymentStatus(orderId, "paid");
 
     if (error) throw error;
 
@@ -317,203 +360,204 @@ const handlePaymentSuccess = async (orderId: string | undefined) => {
     // toast.success('ชำระเงินเรียบร้อยแล้ว');
 
     // 3. โหลดข้อมูลใหม่เพื่ออัปเดต UI ในตาราง
-    await loadOrders(); 
-
+    await loadOrders();
   } catch (err) {
-    console.error('Update payment failed:', err);
-    alert('เกิดข้อผิดพลาดในการอัปเดตสถานะการชำระเงิน');
+    console.error("Update payment failed:", err);
+    alert("เกิดข้อผิดพลาดในการอัปเดตสถานะการชำระเงิน");
   }
 };
 const handleCancelOrder = async () => {
-  if (!orderToDelete.value) return
+  if (!orderToDelete.value) return;
 
-  loading.value = true
+  loading.value = true;
   try {
     // ใช้ฟังก์ชันจาก useOrders ที่คุณเตรียมไว้แล้ว
-    const { error } = await updateOrderStatus(orderToDelete.value.id, 'cancelled')
+    const { error } = await updateOrderStatus(
+      orderToDelete.value.id,
+      "cancelled",
+    );
 
     if (!error) {
-      await loadOrders() // โหลดข้อมูลใหม่เพื่ออัปเดต UI ให้ Badge กลายเป็นสีแดง (ยกเลิก)
-      showDeleteConfirm.value = false // ปิด Modal
-      orderToDelete.value = null // ล้างค่า
+      await loadOrders(); // โหลดข้อมูลใหม่เพื่ออัปเดต UI ให้ Badge กลายเป็นสีแดง (ยกเลิก)
+      showDeleteConfirm.value = false; // ปิด Modal
+      orderToDelete.value = null; // ล้างค่า
     } else {
-      throw error
+      throw error;
     }
   } catch (err) {
-    console.error('Error cancelling order:', err)
-    alert('ไม่สามารถยกเลิกคำสั่งซื้อได้ กรุณาลองใหม่อีกครั้ง')
+    console.error("Error cancelling order:", err);
+    alert("ไม่สามารถยกเลิกคำสั่งซื้อได้ กรุณาลองใหม่อีกครั้ง");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 // Mobile Sidebar Controls
 const toggleMobileSidebar = () => {
-  showMobileSidebar.value = !showMobileSidebar.value
-}
+  showMobileSidebar.value = !showMobileSidebar.value;
+};
 
 const closeMobileSidebar = () => {
-  showMobileSidebar.value = false
-}
+  showMobileSidebar.value = false;
+};
 
 const handleToggle = (isCollapsed) => {
-  isSidebarCollapsed.value = isCollapsed
-}
+  isSidebarCollapsed.value = isCollapsed;
+};
 
 // Search handler with debounce - ส่วนที่หายไป
-let searchTimeout: any
+let searchTimeout: any;
 const handleSearch = () => {
-  clearTimeout(searchTimeout)
+  clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    loadOrders()
-  }, 500)
-}
+    loadOrders();
+  }, 500);
+};
 
 // Get orders by status
 const getOrdersByStatus = (status: string) => {
-  return orders.value.filter((order: any) => order.status === status)
-}
+  return orders.value.filter((order: any) => order.status === status);
+};
 
 // Modal handlers - ส่วนที่หายไป
 const openCreateModal = () => {
-  selectedOrder.value = null
-  showModal.value = true
-}
+  selectedOrder.value = null;
+  showModal.value = true;
+};
 
 const openEditModal = (order: any) => {
-  selectedOrder.value = { ...order }
-  showModal.value = true
-}
+  selectedOrder.value = { ...order };
+  showModal.value = true;
+};
 
 const viewOrder = (order: any) => {
-  selectedOrder.value = order
-  showDetailModal.value = true
-}
+  selectedOrder.value = order;
+  showDetailModal.value = true;
+};
 
 const closeModal = () => {
-  showModal.value = false
-  selectedOrder.value = null
-}
+  showModal.value = false;
+  selectedOrder.value = null;
+};
 
 const closeDetailModal = () => {
-  showDetailModal.value = false
-  selectedOrder.value = null
-}
+  showDetailModal.value = false;
+  selectedOrder.value = null;
+};
 
 const handleSave = async () => {
-  closeModal()
-  await loadOrders()
-}
+  closeModal();
+  await loadOrders();
+};
 
 const handleUpdateStatus = async () => {
-  await loadOrders()
-}
+  await loadOrders();
+};
 
 const confirmDelete = (order: any) => {
-  orderToDelete.value = order
-  showDeleteConfirm.value = true
-}
+  orderToDelete.value = order;
+  showDeleteConfirm.value = true;
+};
 
 const handleDelete = async () => {
   if (orderToDelete.value) {
-    const { error } = await deleteOrder(orderToDelete.value.id)
-    
+    const { error } = await deleteOrder(orderToDelete.value.id);
+
     if (!error) {
-      await loadOrders()
+      await loadOrders();
     }
   }
-  
-  showDeleteConfirm.value = false
-  orderToDelete.value = null
-}
+
+  showDeleteConfirm.value = false;
+  orderToDelete.value = null;
+};
 
 // Get status class
 const getStatusClass = (status: string) => {
   const classes: any = {
-    pending: 'warning',
-    confirmed: 'info',
-    processing: 'info',
-    shipping: 'primary',
-    completed: 'success',
-    cancelled: 'danger'
-  }
-  return classes[status] || 'secondary'
-}
+    pending: "warning",
+    confirmed: "info",
+    processing: "info",
+    shipping: "primary",
+    completed: "success",
+    cancelled: "danger",
+  };
+  return classes[status] || "secondary";
+};
 
 // Get status label
 const getStatusLabel = (status: string) => {
   const labels: any = {
-    pending: 'รอดำเนินการ',
-    confirmed: 'ยืนยันแล้ว',
-    processing: 'กำลังเตรียมสินค้า',
-    shipping: 'กำลังจัดส่ง',
-    completed: 'สำเร็จแล้ว',
-    cancelled: 'ยกเลิก'
-  }
-  return labels[status] || status
-}
+    pending: "รอดำเนินการ",
+    confirmed: "ยืนยันแล้ว",
+    processing: "กำลังเตรียมสินค้า",
+    shipping: "กำลังจัดส่ง",
+    completed: "สำเร็จแล้ว",
+    cancelled: "ยกเลิก",
+  };
+  return labels[status] || status;
+};
 
 // Get payment status class
 const getPaymentStatusClass = (status: string) => {
   const classes: any = {
-    unpaid: 'warning',
-    paid: 'success',
-    refunded: 'danger'
-  }
-  return classes[status] || 'secondary'
-}
+    unpaid: "warning",
+    paid: "success",
+    refunded: "danger",
+  };
+  return classes[status] || "secondary";
+};
 
 // Get payment status label
 const getPaymentStatusLabel = (status: string) => {
   const labels: any = {
-    unpaid: 'ยังไม่ชำระ',
-    paid: 'ชำระแล้ว',
-    refunded: 'คืนเงินแล้ว'
-  }
-  return labels[status] || status
-}
+    unpaid: "ยังไม่ชำระ",
+    paid: "ชำระแล้ว",
+    refunded: "คืนเงินแล้ว",
+  };
+  return labels[status] || status;
+};
 
 // Format number
 const formatNumber = (num: number) => {
-  return new Intl.NumberFormat('th-TH', {
+  return new Intl.NumberFormat("th-TH", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(num)
-}
+    maximumFractionDigits: 2,
+  }).format(num);
+};
 
 // Format date
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+  const date = new Date(dateString);
+  return date.toLocaleDateString("th-TH", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 // Handle menu click
 const handleMenuClick = (item: any) => {
-  if (item.id === 'home') {
-    navigateTo('/dashboard')
-  } else if (item.id === 'products') {
-    navigateTo('/products')
-  } else if (item.id === 'orders') {
-    navigateTo('/orders')
-  }else if (item.id === 'customers') {
-    navigateTo('/customers')
-  }else if (item.id === 'reports') {
-     navigateTo('/reports')
+  if (item.id === "home") {
+    navigateTo("/dashboard");
+  } else if (item.id === "products") {
+    navigateTo("/products");
+  } else if (item.id === "orders") {
+    navigateTo("/orders");
+  } else if (item.id === "customers") {
+    navigateTo("/customers");
+  } else if (item.id === "reports") {
+    navigateTo("/reports");
+  } else if (item.id === "settings") {
+    navigateTo("/settings");
   }
-  else if (item.id === 'settings') {
-    navigateTo('/settings')
-  }
-}
+};
 
 // Initialize
 onMounted(async () => {
-  await loadOrders()
-})
+  await loadOrders();
+});
 </script>
 
 <style scoped>
@@ -836,68 +880,23 @@ onMounted(async () => {
   color: #374151;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn-icon {
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1.125rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-view {
-  background: #e0e7ff;
-}
-
-.btn-view:hover {
-  background: #c7d2fe;
-  transform: scale(1.1);
-}
-
-.btn-edit {
-  background: #dbeafe;
-}
-
-.btn-edit:hover {
-  background: #bfdbfe;
-  transform: scale(1.1);
-}
-
-.btn-delete {
-  background: #fee2e2;
-}
-
-.btn-delete:hover {
-  background: #fecaca;
-  transform: scale(1.1);
-}
-
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
   }
-  
+
   .content-wrapper {
     padding: 1rem;
   }
-  
+
   .filters {
     flex-direction: column;
   }
-  
+
   .search-box {
     min-width: 100%;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -917,7 +916,7 @@ onMounted(async () => {
     border-radius: 1rem;
     margin-bottom: 1.25rem;
     padding: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   }
 
   /* จัดการช่องข้อมูล (Label อยู่ซ้าย ข้อมูลอยู่ขวา) */
@@ -1015,7 +1014,7 @@ onMounted(async () => {
   display: none; /* เริ่มต้นซ่อนไว้ก่อน */
   position: fixed;
   bottom: 25px; /* ระยะจากขอบล่าง */
-  right: 25px;  /* ระยะจากขอบขวา */
+  right: 25px; /* ระยะจากขอบขวา */
   width: 56px;
   height: 56px;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -1050,9 +1049,15 @@ onMounted(async () => {
 }
 
 /* Animation เส้นเมื่อเปิดเมนู */
-.line-open:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.line-open:nth-child(2) { opacity: 0; }
-.line-open:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+.line-open:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.line-open:nth-child(2) {
+  opacity: 0;
+}
+.line-open:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
 
 /* --- Media Query: แสดงเฉพาะบนมือถือ --- */
 @media (max-width: 1024px) {
@@ -1072,5 +1077,77 @@ onMounted(async () => {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Container สำหรับจัดกลุ่มปุ่ม */
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* ระยะห่างระหว่างปุ่ม */
+}
+
+/* สไตล์ปุ่มพื้นฐาน (Shared) */
+.btn-icon,
+.btn-pay-now {
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ปุ่มดูรายละเอียด (แว่นขยาย/รูปตา) */
+.btn-view {
+  background-color: #f1f5f9;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+.btn-view:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+  transform: translateY(-1px);
+}
+
+/* 💳 ปุ่มชำระเงิน (โดดเด่นที่สุด) */
+.btn-pay-now {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 0 16px;
+  height: 36px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 6px;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+}
+.btn-pay-now:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
+}
+.btn-pay-now:active {
+  transform: translateY(0);
+}
+
+/* 🚫 ปุ่มยกเลิก (สีแดงอ่อน) */
+.btn-delete {
+  background-color: #fff1f2;
+  color: #e11d48;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+.btn-delete:hover {
+  background-color: #ffe4e6;
+  color: #be123c;
+  transform: translateY(-1px);
+}
+
+/* ปรับขนาด Emoji ในปุ่ม icon ให้พอดี */
+.btn-icon {
+  font-size: 1.1rem;
 }
 </style>

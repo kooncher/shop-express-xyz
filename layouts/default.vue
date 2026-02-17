@@ -38,7 +38,7 @@ const handleLogout = async () => {
 <style scoped>
 .floating-logout-btn {
   position: fixed;
-  top: 20px;
+  top: 10px;
   right: 20px;
   z-index: 9999; /* ให้อยู่เหนือทุกอย่าง */
   

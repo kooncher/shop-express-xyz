@@ -57,6 +57,7 @@
               v-model="form.sku"
               type="text"
               class="form-input"
+              @input="validateSKU"
               placeholder="SKU-001"
             />
           </div>
@@ -267,6 +268,23 @@ const deleteImage = async (filePath) => {
     console.error('Error deleting image:', error)
   }
 }
+const skuError = ref(false);
+
+const validateSKU = (event) => {
+  // 1. กรองทิ้งเฉพาะภาษาไทย (ช่วง ก-๙)
+  // ส่วนอักขระพิเศษอื่นๆ (เช่น @, #, $, %, ! , ฯลฯ) จะยังอยู่ครบ
+  const filteredValue = event.target.value.replace(/[ก-๙]/g, '');
+  
+  // 2. อัปเดตลงในตัวแปร form
+  form.value.sku = filteredValue;
+  
+  // 3. บังคับอัปเดตค่าในช่อง Input ที่หน้าจอทันที
+  event.target.value = filteredValue;
+
+  // 4. แจ้งเตือนถ้ามีการพยายามพิมพ์ไทย
+  const thaiRegex = /[ก-๙]/;
+  skuError.value = thaiRegex.test(event.target.value);
+};
 
 const handleSubmit = async () => {
   loading.value = true

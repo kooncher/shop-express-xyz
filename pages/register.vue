@@ -141,18 +141,32 @@ const handleRegister = async () => {
     errorMessage.value = ''
     successMessage.value = ''
 
-    // Validate inputs
-    if (!fullName.value.trim()) {
-      errorMessage.value = 'กรุณากรอกชื่อ-นามสกุล'
+    // 1. Trim ข้อมูลทั้งหมดก่อนเริ่มตรวจ
+    const cleanFullName = fullName.value.trim()
+    const cleanEmail = email.value.trim()
+    const cleanPassword = password.value
+    const cleanConfirm = confirmPassword.value
+
+    // 2. Validate ชื่อ
+    if (cleanFullName.length < 3) {
+      errorMessage.value = 'กรุณากรอกชื่อ-นามสกุลให้ครบถ้วน'
       return
     }
 
-    if (password.value.length < 6) {
+    // 3. Validate อีเมลด้วย Regex (สำคัญมาก)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(cleanEmail)) {
+      errorMessage.value = 'รูปแบบอีเมลไม่ถูกต้อง'
+      return
+    }
+
+    // 4. Validate รหัสผ่าน
+    if (cleanPassword.length < 6) {
       errorMessage.value = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'
       return
     }
 
-    if (password.value !== confirmPassword.value) {
+    if (cleanPassword !== cleanConfirm) {
       errorMessage.value = 'รหัสผ่านไม่ตรงกัน'
       return
     }

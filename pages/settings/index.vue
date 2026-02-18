@@ -1,8 +1,6 @@
 <template>
   <div class="dashboard-container">
-
-    
-     <button class="floating-hamburger-btn" @click="toggleMobileSidebar">
+    <button class="floating-hamburger-btn" @click="toggleMobileSidebar">
       <div class="hamburger-icon-wrapper">
         <span :class="{ 'line-open': showMobileSidebar }"></span>
         <span :class="{ 'line-open': showMobileSidebar }"></span>
@@ -10,9 +8,9 @@
       </div>
     </button>
 
-      <!-- Mobile Overlay -->
-    <div 
-      v-if="showMobileSidebar" 
+    <!-- Mobile Overlay -->
+    <div
+      v-if="showMobileSidebar"
       class="mobile-overlay"
       @click="closeMobileSidebar"
     ></div>
@@ -26,7 +24,10 @@
       @close-mobile="closeMobileSidebar"
     />
 
-    <main class="main-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <main
+      class="main-content"
+      :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+    >
       <div class="content-wrapper">
         <!-- Header -->
         <div class="page-header">
@@ -55,7 +56,7 @@
           <div v-if="activeTab === 'profile'" class="tab-panel">
             <div class="card">
               <h2 class="card-title">ข้อมูลส่วนตัว</h2>
-              
+
               <form @submit.prevent="saveProfile" class="form">
                 <div class="form-row">
                   <div class="form-group">
@@ -88,7 +89,9 @@
                       v-model="profileForm.phone"
                       type="tel"
                       class="form-input"
+                      @input="formatPhoneNumber"
                       placeholder="081-234-5678"
+                      maxlength="12"
                     />
                   </div>
 
@@ -103,12 +106,19 @@
                   </div>
                 </div>
 
-                <div v-if="profileMessage" :class="['message', profileMessage.type]">
+                <div
+                  v-if="profileMessage"
+                  :class="['message', profileMessage.type]"
+                >
                   {{ profileMessage.text }}
                 </div>
 
-                <button type="submit" :disabled="profileLoading" class="btn-primary">
-                  {{ profileLoading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล' }}
+                <button
+                  type="submit"
+                  :disabled="profileLoading"
+                  class="btn-primary"
+                >
+                  {{ profileLoading ? "กำลังบันทึก..." : "บันทึกข้อมูล" }}
                 </button>
               </form>
             </div>
@@ -116,7 +126,7 @@
             <!-- Change Password -->
             <div class="card">
               <h2 class="card-title">เปลี่ยนรหัสผ่าน</h2>
-              
+
               <form @submit.prevent="changePasswordHandler" class="form">
                 <div class="form-group">
                   <label class="form-label">รหัสผ่านใหม่</label>
@@ -143,22 +153,29 @@
                   />
                 </div>
 
-                <div v-if="passwordMessage" :class="['message', passwordMessage.type]">
+                <div
+                  v-if="passwordMessage"
+                  :class="['message', passwordMessage.type]"
+                >
                   {{ passwordMessage.text }}
                 </div>
 
-                <button type="submit" :disabled="passwordLoading" class="btn-primary">
-                  {{ passwordLoading ? 'กำลังเปลี่ยน...' : 'เปลี่ยนรหัสผ่าน' }}
+                <button
+                  type="submit"
+                  :disabled="passwordLoading"
+                  class="btn-primary"
+                >
+                  {{ passwordLoading ? "กำลังเปลี่ยน..." : "เปลี่ยนรหัสผ่าน" }}
                 </button>
               </form>
             </div>
           </div>
 
           <!-- Shop Tab -->
-          <div v-if="activeTab === 'shop'" class="tab-panel" >
+          <div v-if="activeTab === 'shop'" class="tab-panel">
             <div class="card">
               <h2 class="card-title">ข้อมูลร้านค้า</h2>
-              
+
               <form @submit.prevent="saveShop" class="form">
                 <div class="form-group">
                   <label class="form-label">ชื่อร้าน</label>
@@ -188,6 +205,8 @@
                       type="tel"
                       class="form-input"
                       placeholder="081-234-5678"
+                      @input="formatPhoneNumber"
+                      maxlength="12"
                     />
                   </div>
 
@@ -206,8 +225,12 @@
                   {{ shopMessage.text }}
                 </div>
 
-                <button type="submit" :disabled="shopLoading" class="btn-primary">
-                  {{ shopLoading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล' }}
+                <button
+                  type="submit"
+                  :disabled="shopLoading"
+                  class="btn-primary"
+                >
+                  {{ shopLoading ? "กำลังบันทึก..." : "บันทึกข้อมูล" }}
                 </button>
               </form>
             </div>
@@ -217,16 +240,21 @@
           <div v-if="activeTab === 'notifications'" class="tab-panel">
             <div class="card">
               <h2 class="card-title">การแจ้งเตือน</h2>
-              
+
               <form @submit.prevent="saveNotifications" class="form">
                 <div class="settings-group">
                   <div class="setting-item">
                     <div class="setting-info">
                       <p class="setting-label">แจ้งเตือนคำสั่งซื้อใหม่</p>
-                      <p class="setting-desc">รับการแจ้งเตือนเมื่อมีคำสั่งซื้อใหม่</p>
+                      <p class="setting-desc">
+                        รับการแจ้งเตือนเมื่อมีคำสั่งซื้อใหม่
+                      </p>
                     </div>
                     <label class="toggle">
-                      <input v-model="notifyForm.notify_new_order" type="checkbox" />
+                      <input
+                        v-model="notifyForm.notify_new_order"
+                        type="checkbox"
+                      />
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
@@ -234,10 +262,15 @@
                   <div class="setting-item">
                     <div class="setting-info">
                       <p class="setting-label">แจ้งเตือนสต็อกใกล้หมด</p>
-                      <p class="setting-desc">รับการแจ้งเตือนเมื่อสินค้าในสต็อกใกล้หมด</p>
+                      <p class="setting-desc">
+                        รับการแจ้งเตือนเมื่อสินค้าในสต็อกใกล้หมด
+                      </p>
                     </div>
                     <label class="toggle">
-                      <input v-model="notifyForm.notify_low_stock" type="checkbox" />
+                      <input
+                        v-model="notifyForm.notify_low_stock"
+                        type="checkbox"
+                      />
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
@@ -248,29 +281,43 @@
                       <p class="setting-desc">รับการแจ้งเตือนทางอีเมล</p>
                     </div>
                     <label class="toggle">
-                      <input v-model="notifyForm.notify_email" type="checkbox" />
+                      <input
+                        v-model="notifyForm.notify_email"
+                        type="checkbox"
+                      />
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">จำนวนสต็อกขั้นต่ำสำหรับแจ้งเตือน</label>
+                  <label class="form-label"
+                    >จำนวนสต็อกขั้นต่ำสำหรับแจ้งเตือน</label
+                  >
                   <input
                     v-model.number="notifyForm.low_stock_threshold"
                     type="number"
                     class="form-input"
                     min="0"
                   />
-                  <p class="form-hint">แจ้งเตือนเมื่อสินค้าเหลือน้อยกว่าจำนวนนี้</p>
+                  <p class="form-hint">
+                    แจ้งเตือนเมื่อสินค้าเหลือน้อยกว่าจำนวนนี้
+                  </p>
                 </div>
 
-                <div v-if="notifyMessage" :class="['message', notifyMessage.type]">
+                <div
+                  v-if="notifyMessage"
+                  :class="['message', notifyMessage.type]"
+                >
                   {{ notifyMessage.text }}
                 </div>
 
-                <button type="submit" :disabled="notifyLoading" class="btn-primary">
-                  {{ notifyLoading ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า' }}
+                <button
+                  type="submit"
+                  :disabled="notifyLoading"
+                  class="btn-primary"
+                >
+                  {{ notifyLoading ? "กำลังบันทึก..." : "บันทึกการตั้งค่า" }}
                 </button>
               </form>
             </div>
@@ -280,7 +327,7 @@
           <div v-if="activeTab === 'system'" class="tab-panel">
             <div class="card">
               <h2 class="card-title">ตั้งค่าระบบ</h2>
-              
+
               <form @submit.prevent="saveSystem" class="form">
                 <div class="form-row">
                   <div class="form-group">
@@ -296,7 +343,9 @@
                     <label class="form-label">เขตเวลา</label>
                     <select v-model="systemForm.timezone" class="form-select">
                       <option value="Asia/Bangkok">Asia/Bangkok (GMT+7)</option>
-                      <option value="Asia/Singapore">Asia/Singapore (GMT+8)</option>
+                      <option value="Asia/Singapore">
+                        Asia/Singapore (GMT+8)
+                      </option>
                       <option value="Asia/Tokyo">Asia/Tokyo (GMT+9)</option>
                     </select>
                   </div>
@@ -313,20 +362,36 @@
 
                   <div class="form-group">
                     <label class="form-label">รูปแบบวันที่</label>
-                    <select v-model="systemForm.date_format" class="form-select">
-                      <option value="dd/MM/yyyy">วัน/เดือน/ปี (31/12/2024)</option>
-                      <option value="MM/dd/yyyy">เดือน/วัน/ปี (12/31/2024)</option>
-                      <option value="yyyy-MM-dd">ปี-เดือน-วัน (2024-12-31)</option>
+                    <select
+                      v-model="systemForm.date_format"
+                      class="form-select"
+                    >
+                      <option value="dd/MM/yyyy">
+                        วัน/เดือน/ปี (31/12/2024)
+                      </option>
+                      <option value="MM/dd/yyyy">
+                        เดือน/วัน/ปี (12/31/2024)
+                      </option>
+                      <option value="yyyy-MM-dd">
+                        ปี-เดือน-วัน (2024-12-31)
+                      </option>
                     </select>
                   </div>
                 </div>
 
-                <div v-if="systemMessage" :class="['message', systemMessage.type]">
+                <div
+                  v-if="systemMessage"
+                  :class="['message', systemMessage.type]"
+                >
                   {{ systemMessage.text }}
                 </div>
 
-                <button type="submit" :disabled="systemLoading" class="btn-primary">
-                  {{ systemLoading ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า' }}
+                <button
+                  type="submit"
+                  :disabled="systemLoading"
+                  class="btn-primary"
+                >
+                  {{ systemLoading ? "กำลังบันทึก..." : "บันทึกการตั้งค่า" }}
                 </button>
               </form>
             </div>
@@ -339,52 +404,57 @@
 
 <script setup lang="ts">
 definePageMeta({
-  middleware: 'auth'
-})
+  middleware: "auth",
+});
 
-const { user } = useAuth()
-const isAdmin = computed(() => user.value?.profile?.role === 'admin')
+const { user } = useAuth();
+const isAdmin = computed(() => user.value?.profile?.role === "admin");
 
-const { 
-  getUserProfile, 
-  updateUserProfile, 
+const {
+  getUserProfile,
+  updateUserProfile,
   changePassword,
   getShopSettings,
-  updateShopSettings
-} = useSettings()
+  updateShopSettings,
+} = useSettings();
 
-const activeTab = ref('profile')
-const showMobileSidebar = ref(false)
-const isSidebarCollapsed = ref(false)
-const userRoleCookie = useCookie('user-role'); // 👈 ดึงค่า Role จาก Cooki
+const activeTab = ref("profile");
+const showMobileSidebar = ref(false);
+const isSidebarCollapsed = ref(false);
+const userRoleCookie = useCookie("user-role"); // 👈 ดึงค่า Role จาก Cooki
 
 // ปรับ tabs ให้เป็น computed
 const tabs = computed(() => {
   // เริ่มต้นด้วยแท็บพื้นฐานที่ทุกคนต้องเห็น
-  const menuItems = [
-    { id: 'profile', label: 'โปรไฟล์', icon: '👤' }
-  ]
+  const menuItems = [{ id: "profile", label: "โปรไฟล์", icon: "👤" }];
 
   // ถ้าเป็น admin ให้เพิ่มแท็บข้อมูลร้านเข้าไป
   if (isAdmin.value) {
-    menuItems.push({ id: 'shop', label: 'ข้อมูลร้าน', icon: '🏪' })
+    menuItems.push({ id: "shop", label: "ข้อมูลร้าน", icon: "🏪" });
   }
 
-  return menuItems
-})
-
+  return menuItems;
+});
 
 const menuItems = [
   { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
   { id: "products", label: "สินค้า", icon: "📦", roles: ["admin"] },
   { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
   { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] }, // เฉพาะ Admin
-  { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },   // เฉพาะ Admin
-    { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ["customer"] },
-  { id: "myorders", label: "คำสั่งซื้อของฉัน", icon: "📋", roles: ["customer"] },
-  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin",'customer'] },   // เฉพาะ Admin
-
-
+  { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] }, // เฉพาะ Admin
+  { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ["customer"] },
+  {
+    id: "myorders",
+    label: "คำสั่งซื้อของฉัน",
+    icon: "📋",
+    roles: ["customer"],
+  },
+  {
+    id: "settings",
+    label: "ตั้งค่า",
+    icon: "⚙️",
+    roles: ["admin", "customer"],
+  }, // เฉพาะ Admin
 ];
 
 const userData = computed(() => {
@@ -392,140 +462,191 @@ const userData = computed(() => {
     name: user.value?.user_metadata?.full_name || "testuser",
     email: user.value?.email || "",
     avatar: "👤",
-    role: user.value?.user_metadata?.role || userRoleCookie.value || "customer" // 👈 ดึงจาก Cookie ถ้า User ยังไม่มา
-  }
+    role: user.value?.user_metadata?.role || userRoleCookie.value || "customer", // 👈 ดึงจาก Cookie ถ้า User ยังไม่มา
+  };
 });
 
 // Profile Form
 const profileForm = ref({
-  full_name: '',
-  email: '',
-  phone: '',
-  address: ''
-})
-const profileLoading = ref(false)
-const profileMessage = ref<any>(null)
+  full_name: "",
+  email: "",
+  phone: "",
+  address: "",
+});
+const profileLoading = ref(false);
+const profileMessage = ref<any>(null);
 
 // Password Form
 const passwordForm = ref({
-  newPassword: '',
-  confirmPassword: ''
-})
-const passwordLoading = ref(false)
-const passwordMessage = ref<any>(null)
+  newPassword: "",
+  confirmPassword: "",
+});
+const passwordLoading = ref(false);
+const passwordMessage = ref<any>(null);
 
 // Shop Form
 const shopForm = ref({
-  shop_name: '',
-  shop_address: '',
-  shop_phone: '',
-  shop_email: ''
-})
-const shopLoading = ref(false)
-const shopMessage = ref<any>(null)
+  shop_name: "",
+  shop_address: "",
+  shop_phone: "",
+  shop_email: "",
+});
+const shopLoading = ref(false);
+const shopMessage = ref<any>(null);
 
 // Notifications Form
 const notifyForm = ref({
   notify_new_order: true,
   notify_low_stock: true,
   notify_email: true,
-  low_stock_threshold: 10
-})
-const notifyLoading = ref(false)
-const notifyMessage = ref<any>(null)
+  low_stock_threshold: 10,
+});
+const notifyLoading = ref(false);
+const notifyMessage = ref<any>(null);
 
 // System Form
 const systemForm = ref({
-  currency: 'THB',
-  timezone: 'Asia/Bangkok',
-  language: 'th',
-  date_format: 'dd/MM/yyyy'
-})
-const systemLoading = ref(false)
-const systemMessage = ref<any>(null)
+  currency: "THB",
+  timezone: "Asia/Bangkok",
+  language: "th",
+  date_format: "dd/MM/yyyy",
+});
+const systemLoading = ref(false);
+const systemMessage = ref<any>(null);
 
 // Load data
 const loadProfile = async () => {
-  if (!user.value?.id) return
+  if (!user.value?.id) return;
 
-  const { data } = await getUserProfile(user.value.id)
+  const { data } = await getUserProfile(user.value.id);
   if (data) {
     profileForm.value = {
-      full_name: data.full_name || '',
-      email: data.email || user.value.email || '',
-      phone: data.phone || '',
-      address: data.address || ''
-    }
+      full_name: data.full_name || "",
+      email: data.email || user.value.email || "",
+      phone: data.phone || "",
+      address: data.address || "",
+    };
   }
-}
+};
 
 const loadShopSettings = async () => {
-  const { data } = await getShopSettings()
+  const { data } = await getShopSettings();
   if (data) {
     shopForm.value = {
-      shop_name: data.shop_name || '',
-      shop_address: data.shop_address || '',
-      shop_phone: data.shop_phone || '',
-      shop_email: data.shop_email || ''
-    }
-    
+      shop_name: data.shop_name || "",
+      shop_address: data.shop_address || "",
+      shop_phone: data.shop_phone || "",
+      shop_email: data.shop_email || "",
+    };
+
     notifyForm.value = {
       notify_new_order: data.notify_new_order ?? true,
       notify_low_stock: data.notify_low_stock ?? true,
       notify_email: data.notify_email ?? true,
-      low_stock_threshold: data.low_stock_threshold || 10
-    }
+      low_stock_threshold: data.low_stock_threshold || 10,
+    };
 
     systemForm.value = {
-      currency: data.currency || 'THB',
-      timezone: data.timezone || 'Asia/Bangkok',
-      language: data.language || 'th',
-      date_format: data.date_format || 'dd/MM/yyyy'
-    }
+      currency: data.currency || "THB",
+      timezone: data.timezone || "Asia/Bangkok",
+      language: data.language || "th",
+      date_format: data.date_format || "dd/MM/yyyy",
+    };
   }
-}
-
+};
+const validatePhone = (phone: string) => {
+  // รองรับ 08xxxxxxxx, 09xxxxxxxx, 06xxxxxxxx และรูปแบบมีขีด 08x-xxx-xxxx
+  const phoneRegex = /^(06|08|09)\d{8}$|^(06|08|09)\d{1}-\d{3}-\d{4}$/;
+  return phoneRegex.test(phone.replace(/\s/g, "")); // ลบช่องว่างออกก่อนเช็ค
+};
 // Save handlers
+const formatPhoneNumber = (e: any) => {
+  let value = e.target.value.replace(/\D/g, ""); // ลบทุกอย่างที่ไม่ใช่ตัวเลข
+  if (value.length > 10) value = value.slice(0, 10); // จำกัดแค่ 10 หลัก
+
+  // จัดรูปแบบเป็น 0xx-xxx-xxxx
+  if (value.length > 6) {
+    value = `${value.slice(0, 3)}-${value.slice(3, 6)}-${value.slice(6)}`;
+  } else if (value.length > 3) {
+    value = `${value.slice(0, 3)}-${value.slice(3)}`;
+  }
+
+  profileForm.value.phone = value;
+};
+
 const saveProfile = async () => {
-  if (!user.value?.id) return
+  if (!user.value?.id) return;
 
-  profileLoading.value = true
-  profileMessage.value = null
+  profileLoading.value = true;
+  profileMessage.value = null;
 
+  // 1. Validate เบอร์โทรก่อนส่งข้อมูล
+  if (profileForm.value.phone && !validatePhone(profileForm.value.phone)) {
+    profileMessage.value = {
+      type: "error",
+      text: "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ควรเป็น 08x-xxx-xxxx)",
+    };
+    profileLoading.value = false;
+    return; // หยุดการทำงานถ้าไม่ผ่าน
+  }
+
+  // 2. ส่งข้อมูลไปยัง API
   const { error } = await updateUserProfile(user.value.id, {
     full_name: profileForm.value.full_name,
     phone: profileForm.value.phone,
-    address: profileForm.value.address
-  })
+    address: profileForm.value.address,
+  });
 
+  // 3. จัดการ Response
   if (error) {
     profileMessage.value = {
-      type: 'error',
-      text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล'
-    }
+      type: "error",
+      text: "เกิดข้อผิดพลาดในการบันทึกข้อมูล",
+    };
   } else {
     profileMessage.value = {
-      type: 'success',
-      text: 'บันทึกข้อมูลสำเร็จ'
-    }
+      type: "success",
+      text: "บันทึกข้อมูลสำเร็จ",
+    };
   }
 
-  profileLoading.value = false
+  profileLoading.value = false;
 
+  // ล้างข้อความแจ้งเตือนอัตโนมัติ
   setTimeout(() => {
-    profileMessage.value = null
-  }, 3000)
-}
+    profileMessage.value = null;
+  }, 3000);
+};
 
+
+const validatePassword = (password: string) => {
+  // Regex นี้ตรวจสอบ:
+  // 1. ต้องเป็นภาษาอังกฤษ (a-z, A-Z), ตัวเลข (0-9) หรือสัญลักษณ์พิเศษเท่านั้น
+  // 2. ห้ามมีภาษาไทย
+  // 3. ความยาว 6-20 ตัวอักษร
+  const passwordRegex = /^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;"'<>,.?/-]{6,20}$/;
+  return passwordRegex.test(password);
+};
 const changePasswordHandler = async () => {
+  // ดักที่ 1: เช็คว่ารหัสผ่านใหม่กับยืนยันตรงกันไหม
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
     passwordMessage.value = {
       type: 'error',
-      text: 'รหัสผ่านไม่ตรงกัน'
+      text: 'รหัสผ่านยืนยันไม่ตรงกัน'
     }
     return
   }
 
+  // ดักที่ 2: เช็คภาษาและรูปแบบ (ดักภาษาไทยออกที่นี่)
+  if (!validatePassword(passwordForm.value.newPassword)) {
+    passwordMessage.value = {
+      type: 'error',
+      text: 'รหัสผ่านต้องเป็นภาษาอังกฤษหรือตัวเลข 6 ตัวขึ้นไป (ห้ามใช้ภาษาไทย)'
+    }
+    return
+  }
+
+  // ถ้าผ่านการดักข้างบน ถึงจะเริ่มทำงานต่อ
   passwordLoading.value = true
   passwordMessage.value = null
 
@@ -541,6 +662,7 @@ const changePasswordHandler = async () => {
       type: 'success',
       text: 'เปลี่ยนรหัสผ่านสำเร็จ'
     }
+    // ล้างฟอร์มเมื่อสำเร็จ
     passwordForm.value = {
       newPassword: '',
       confirmPassword: ''
@@ -553,114 +675,113 @@ const changePasswordHandler = async () => {
     passwordMessage.value = null
   }, 3000)
 }
-
 const saveShop = async () => {
-  shopLoading.value = true
-  shopMessage.value = null
+  shopLoading.value = true;
+  shopMessage.value = null;
 
-  const { error } = await updateShopSettings(shopForm.value)
+  const { error } = await updateShopSettings(shopForm.value);
 
   if (error) {
     shopMessage.value = {
-      type: 'error',
-      text: 'เกิดข้อผิดพลาดในการบันทึกข้อมูล'
-    }
+      type: "error",
+      text: "เกิดข้อผิดพลาดในการบันทึกข้อมูล",
+    };
   } else {
     shopMessage.value = {
-      type: 'success',
-      text: 'บันทึกข้อมูลสำเร็จ'
-    }
+      type: "success",
+      text: "บันทึกข้อมูลสำเร็จ",
+    };
   }
 
-  shopLoading.value = false
+  shopLoading.value = false;
 
   setTimeout(() => {
-    shopMessage.value = null
-  }, 3000)
-}
+    shopMessage.value = null;
+  }, 3000);
+};
 
 const saveNotifications = async () => {
-  notifyLoading.value = true
-  notifyMessage.value = null
+  notifyLoading.value = true;
+  notifyMessage.value = null;
 
-  const { error } = await updateShopSettings(notifyForm.value)
+  const { error } = await updateShopSettings(notifyForm.value);
 
   if (error) {
     notifyMessage.value = {
-      type: 'error',
-      text: 'เกิดข้อผิดพลาดในการบันทึกการตั้งค่า'
-    }
+      type: "error",
+      text: "เกิดข้อผิดพลาดในการบันทึกการตั้งค่า",
+    };
   } else {
     notifyMessage.value = {
-      type: 'success',
-      text: 'บันทึกการตั้งค่าสำเร็จ'
-    }
+      type: "success",
+      text: "บันทึกการตั้งค่าสำเร็จ",
+    };
   }
 
-  notifyLoading.value = false
+  notifyLoading.value = false;
 
   setTimeout(() => {
-    notifyMessage.value = null
-  }, 3000)
-}
+    notifyMessage.value = null;
+  }, 3000);
+};
 
 const saveSystem = async () => {
-  systemLoading.value = true
-  systemMessage.value = null
+  systemLoading.value = true;
+  systemMessage.value = null;
 
-  const { error } = await updateShopSettings(systemForm.value)
+  const { error } = await updateShopSettings(systemForm.value);
 
   if (error) {
     systemMessage.value = {
-      type: 'error',
-      text: 'เกิดข้อผิดพลาดในการบันทึกการตั้งค่า'
-    }
+      type: "error",
+      text: "เกิดข้อผิดพลาดในการบันทึกการตั้งค่า",
+    };
   } else {
     systemMessage.value = {
-      type: 'success',
-      text: 'บันทึกการตั้งค่าสำเร็จ'
-    }
+      type: "success",
+      text: "บันทึกการตั้งค่าสำเร็จ",
+    };
   }
 
-  systemLoading.value = false
+  systemLoading.value = false;
 
   setTimeout(() => {
-    systemMessage.value = null
-  }, 3000)
-}
+    systemMessage.value = null;
+  }, 3000);
+};
 // Mobile Sidebar Controls
 const toggleMobileSidebar = () => {
-  showMobileSidebar.value = !showMobileSidebar.value
-}
+  showMobileSidebar.value = !showMobileSidebar.value;
+};
 
 const closeMobileSidebar = () => {
-  showMobileSidebar.value = false
-}
+  showMobileSidebar.value = false;
+};
 
 const handleToggle = (isCollapsed) => {
-  isSidebarCollapsed.value = isCollapsed
-}
+  isSidebarCollapsed.value = isCollapsed;
+};
 
 const handleMenuClick = (item: any) => {
-  if (item.id === 'home') {
-    navigateTo('/dashboard')
-  } else if (item.id === 'products') {
-    navigateTo('/products')
-  } else if (item.id === 'orders') {
-    navigateTo('/orders')
-  } else if (item.id === 'customers') {
-    navigateTo('/customers')
-  } else if (item.id === 'reports') {
-    navigateTo('/reports')
-  } else if (item.id === 'settings') {
-    navigateTo('/settings')
+  if (item.id === "home") {
+    navigateTo("/dashboard");
+  } else if (item.id === "products") {
+    navigateTo("/products");
+  } else if (item.id === "orders") {
+    navigateTo("/orders");
+  } else if (item.id === "customers") {
+    navigateTo("/customers");
+  } else if (item.id === "reports") {
+    navigateTo("/reports");
+  } else if (item.id === "settings") {
+    navigateTo("/settings");
   }
-}
+};
 
 onMounted(() => {
-  loadProfile()
-  loadShopSettings()
-})
+  loadProfile();
+  loadShopSettings();
+});
 </script>
 
 <style scoped>
@@ -951,7 +1072,7 @@ onMounted(() => {
   display: none; /* เริ่มต้นซ่อนไว้ก่อน */
   position: fixed;
   bottom: 25px; /* ระยะจากขอบล่าง */
-  right: 25px;  /* ระยะจากขอบขวา */
+  right: 25px; /* ระยะจากขอบขวา */
   width: 56px;
   height: 56px;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -986,9 +1107,15 @@ onMounted(() => {
 }
 
 /* Animation เส้นเมื่อเปิดเมนู */
-.line-open:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.line-open:nth-child(2) { opacity: 0; }
-.line-open:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+.line-open:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.line-open:nth-child(2) {
+  opacity: 0;
+}
+.line-open:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
 
 /* --- Media Query: แสดงเฉพาะบนมือถือ --- */
 @media (max-width: 1024px) {

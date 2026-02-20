@@ -222,7 +222,7 @@ const formatDate = (d: string) =>
   d ? new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : "-";
 
 const getStatusLabel = (s: string) =>
-  ({ pending: "รอชำระ", paid: "ชำระแล้ว", completed: "สำเร็จ" })[s] || s;
+  ({ unpaid: "รอชำระ", paid: "ชำระแล้ว", completed: "สำเร็จ" })[s] || s;
 
 const getStatusClass = (s: string) =>
   s === "paid" || s === "completed" || s === "ชำระแล้ว" ? "success" : "warning";

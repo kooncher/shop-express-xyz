@@ -310,32 +310,32 @@ const userData = computed(() => ({
 
 // Load orders
 const loadOrders = async () => {
+  console.log("กำลังดึงข้อมูลออเดอร์ของ ID:", user.value?.profile?.id);
   loading.value = true;
+  try {
+    // ดึง ID จาก profile เหมือนที่คุณใช้ใน console.log ก่อนหน้านี้
+    const userId = user.value?.profile?.id; 
 
-  // 1. ตรวจสอบก่อนว่ามี User Login อยู่จริงไหม (Safety First)
-  if (!user.value) {
+    if (!userId) {
+      console.error("User ID not found!");
+      return;
+    }
+
+    const { data, error } = await getOrders({
+      customer_id: userId, // ส่ง ID ที่ถูกต้องไป
+      status: filterStatus.value,
+      payment_status: filterPaymentStatus.value,
+      search: searchQuery.value
+    });
+
+    if (!error && data) {
+      orders.value = data;
+    }
+  } catch (err) {
+    console.error(err);
+  } finally {
     loading.value = false;
-    return;
   }
-
-  const filters: any = {};
-  if (filterStatus.value) filters.status = filterStatus.value;
-  if (filterPaymentStatus.value)
-    filters.payment_status = filterPaymentStatus.value;
-  if (searchQuery.value) filters.search = searchQuery.value;
-
-  // 2. ส่ง user_id (หรือ id ของผู้ใช้) เข้าไปในฟังก์ชัน getOrders
-  // หมายเหตุ: คุณต้องไปปรับที่ useOrders ให้รับค่า userId ไปกรองใน .eq('user_id', userId) ด้วยครับ
-  const { data, error } = await getOrders({
-    ...filters,
-    userId: user.value.id, // ส่ง ID ของคนที่ Login อยู่ไป
-  });
-
-  if (!error && data) {
-    orders.value = data;
-  }
-
-  loading.value = false;
 };
 const payOrder = (order) => {
   selectedOrderForPayment.value = order;

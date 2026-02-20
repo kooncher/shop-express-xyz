@@ -178,18 +178,20 @@ const fetchProducts = async () => {
 const { createOrder } = useOrders(); // เรียกใช้ composable
 
 const handleCheckout = async () => {
-  const userProfile = user.value?.profile;
-  
+  // ดึง Profile ของคนที่ล็อกอินอยู่
+  const userProfile = user.value?.profile; 
   if (cart.value.length === 0) {
     alert("กรุณาเลือกสินค้าลงตะกร้าก่อนครับ");
     return;
   }
-
   try {
     loading.value = true;
 
-    // 1. เตรียมข้อมูลออเดอร์และรายการสินค้าให้ตรงกับ format ของ useOrders
+    // --- ส่วนที่ต้องแก้ไข ---
     const orderData = {
+      // 1. เพิ่มบรรทัดนี้ลงไป (สำคัญที่สุด!)
+      customer_id: userProfile?.id, 
+      
       order_number: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
       customer_name: userProfile?.full_name || userData.value.name,
       customer_phone: userProfile?.phone || "ไม่ระบุเบอร์โทร",
@@ -198,22 +200,19 @@ const handleCheckout = async () => {
       total: cartTotal.value,
       status: 'pending',
       payment_status: 'unpaid',
-      // ⚠️ จุดสำคัญ: ต้องส่ง items ไปด้วยเพื่อให้ createOrder เอาไปบันทึกลง order_items
       items: cart.value.map(item => ({
-        product_id: item.id,      // ID จากตาราง products
+        product_id: item.id,
         product_name: item.name,
         product_sku: item.sku || '',
         quantity: item.quantity,
         price: item.price
       }))
     };
+    // -----------------------
 
-    // 2. เรียกใช้ createOrder ตัวเดียว จบทั้ง 2 ตาราง
     const { data, error } = await createOrder(orderData);
-
     if (error) throw error;
 
-    // 3. แจ้งเตือนและล้างข้อมูล
     alert(`ยืนยันการสั่งซื้อสำเร็จ! เลขที่ออเดอร์: ${orderData.order_number}`);
     cart.value = []; 
     isCartOpen.value = false;

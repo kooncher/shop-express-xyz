@@ -61,6 +61,7 @@ const getOrder = async (id: string) => {
       const { data: newOrder, error: orderError } = await $supabase
         .from('orders')
         .insert([{
+          customer_id: order.customer_id || null,
           customer_name: order.customer_name,
           customer_phone: order.customer_phone,
           customer_address: order.customer_address,

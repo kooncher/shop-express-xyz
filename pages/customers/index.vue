@@ -240,27 +240,32 @@ const userData = computed(() => ({
 }))
 
 // Load customers
+// ค้นหาฟังก์ชัน loadCustomers ในหน้า .vue แล้วแทนที่ด้วยสิ่งนี้:
 const loadCustomers = async () => {
   loading.value = true
-  const filters: any = {}
-  
-  if (filterStatus.value) {
-    filters.status = filterStatus.value
-  }
-  
-  if (searchQuery.value) {
-    filters.search = searchQuery.value
-  }
+  try {
+    const filters: any = {}
+    if (filterStatus.value) filters.status = filterStatus.value
+    if (searchQuery.value) filters.search = searchQuery.value
 
-  const { data, error } = await getCustomers(filters)
-  
-  if (!error && data) {
-    customers.value = data
+    // ดึงข้อมูลจาก Composable
+    const { data, error } = await getCustomers(filters)
+    
+    if (error) throw error
+
+    // DEBUG: เปิด Console ใน Browser (F12) ดูว่าข้อมูลมาไหม
+    console.log("รายชื่อลูกค้าจาก DB:", data)
+
+    // บรรทัดสำคัญ: ต้องเอา data ไปใส่ใน customers.value
+    customers.value = data || [] 
+    
+  } catch (err) {
+    console.error('เกิดข้อผิดพลาดในการโหลดข้อมูล:', err)
+    customers.value = []
+  } finally {
+    loading.value = false
   }
-  
-  loading.value = false
 }
-
 // Load stats
 const loadStats = async () => {
   const { data } = await getCustomerStats()

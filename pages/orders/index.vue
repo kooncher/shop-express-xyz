@@ -203,14 +203,17 @@ import OrderModal from '~/components/Orders/OrderModal.vue'
 import OrderDetailModal from '~/components/Orders/OrderDetailModal.vue'
 import ConfirmModal from '~/components/Orders/ConfirmModal.vue'
 
-
 definePageMeta({
   middleware: 'auth'
 })
 
+// --- Core Composables ---
+const route = useRoute()
+const router = useRouter()
 const { user } = useAuth()
-const { getOrders, deleteOrder } = useOrders()
+const { getOrders, getOrder, deleteOrder } = useOrders()
 
+// --- State Management ---
 const loading = ref(true)
 const orders = ref([])
 const searchQuery = ref('')
@@ -219,67 +222,56 @@ const filterPaymentStatus = ref('')
 const showMobileSidebar = ref(false)
 const isSidebarCollapsed = ref(false)
 
-// Modal states - ส่วนที่หายไป
-const showModal = ref(false)
-const showDetailModal = ref(false)
-const selectedOrder = ref(null)
+// --- Modal States ---
+const showModal = ref(false)         // Modal สร้าง/แก้ไข
+const showDetailModal = ref(false)   // Modal รายละเอียด (จาก Noti/View)
+const selectedOrder = ref(null)      // เก็บข้อมูลออเดอร์ที่เลือก
 const showDeleteConfirm = ref(false)
 const orderToDelete = ref(null)
 
-const menuItems = [
-  { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
-  { id: "products", label: "สินค้า", icon: "📦", roles: ["admin", "customer"] },
-  { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
-  { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] }, // เฉพาะ Admin
-  { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },   // เฉพาะ Admin
-  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin",'customer'] },   // เฉพาะ Admin
-];
+// --- Data Loading Logic ---
 
-const userData = computed(() => ({
-  name: user.value?.profile?.full_name || 'ผู้ใช้งาน',
-  email: user.value?.email || '',
-  avatar: '👤'
-}))
-
-// Load orders
 const loadOrders = async () => {
   loading.value = true
   const filters: any = {}
   
-  if (filterStatus.value) {
-    filters.status = filterStatus.value
-  }
-  
-  if (filterPaymentStatus.value) {
-    filters.payment_status = filterPaymentStatus.value
-  }
-  
-  if (searchQuery.value) {
-    filters.search = searchQuery.value
-  }
+  if (filterStatus.value) filters.status = filterStatus.value
+  if (filterPaymentStatus.value) filters.payment_status = filterPaymentStatus.value
+  if (searchQuery.value) filters.search = searchQuery.value
 
   const { data, error } = await getOrders(filters)
-  
   if (!error && data) {
     orders.value = data
   }
-  
   loading.value = false
 }
-// Mobile Sidebar Controls
-const toggleMobileSidebar = () => {
-  showMobileSidebar.value = !showMobileSidebar.value
+
+// เช็คและเปิดออเดอร์จาก Notification Query
+const checkAndOpenOrderFromQuery = async () => {
+  const openId = route.query.openId as string
+  if (!openId) return
+
+  // ลองหาใน List ก่อน
+  let targetOrder = orders.value.find((o: any) => o.id === openId)
+
+  // ถ้าไม่เจอให้ Fetch ใหม่
+  if (!targetOrder) {
+    loading.value = true
+    const { data } = await getOrder(openId)
+    if (data) targetOrder = data
+    loading.value = false
+  }
+
+  if (targetOrder) {
+    viewOrder(targetOrder)
+    // ล้าง URL โดยไม่กระทบ history
+    router.replace({ query: { ...route.query, openId: undefined } })
+  }
 }
 
-const closeMobileSidebar = () => {
-  showMobileSidebar.value = false
-}
+// --- Event Handlers ---
 
-const handleToggle = (isCollapsed) => {
-  isSidebarCollapsed.value = isCollapsed
-}
-
-// Search handler with debounce - ส่วนที่หายไป
+// Search พร้อม Debounce
 let searchTimeout: any
 const handleSearch = () => {
   clearTimeout(searchTimeout)
@@ -288,22 +280,19 @@ const handleSearch = () => {
   }, 500)
 }
 
-// Get orders by status
-const getOrdersByStatus = (status: string) => {
-  return orders.value.filter((order: any) => order.status === status)
-}
-
-// Modal handlers - ส่วนที่หายไป
+// สร้างออเดอร์ใหม่
 const openCreateModal = () => {
   selectedOrder.value = null
   showModal.value = true
 }
 
+// แก้ไขออเดอร์
 const openEditModal = (order: any) => {
   selectedOrder.value = { ...order }
   showModal.value = true
 }
 
+// ดูรายละเอียด (ตัวที่เชื่อมกับ Notification)
 const viewOrder = (order: any) => {
   selectedOrder.value = order
   showDetailModal.value = true
@@ -328,6 +317,7 @@ const handleUpdateStatus = async () => {
   await loadOrders()
 }
 
+// การลบออเดอร์
 const confirmDelete = (order: any) => {
   orderToDelete.value = order
   showDeleteConfirm.value = true
@@ -336,30 +326,61 @@ const confirmDelete = (order: any) => {
 const handleDelete = async () => {
   if (orderToDelete.value) {
     const { error } = await deleteOrder(orderToDelete.value.id)
-    
-    if (!error) {
-      await loadOrders()
-    }
+    if (!error) await loadOrders()
   }
-  
   showDeleteConfirm.value = false
   orderToDelete.value = null
 }
 
-// Get status class
+// --- Utilities ---
+
 const getStatusClass = (status: string) => {
   const classes: any = {
-    pending: 'warning',
-    confirmed: 'info',
-    processing: 'info',
-    shipping: 'primary',
-    completed: 'success',
-    cancelled: 'danger'
+    pending: 'warning', confirmed: 'info', processing: 'info',
+    shipping: 'primary', completed: 'success', cancelled: 'danger'
   }
   return classes[status] || 'secondary'
 }
 
-// Get status label
+const getPaymentStatusClass = (status: string) => {
+  const classes: any = { unpaid: 'warning', paid: 'success', refunded: 'danger' }
+  return classes[status] || 'secondary'
+}
+
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat('th-TH', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+  }).format(num || 0)
+}
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('th-TH', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+// --- Lifecycle & Watchers ---
+
+onMounted(async () => {
+  await loadOrders()
+  await checkAndOpenOrderFromQuery()
+})
+
+// ดักจับกรณีผู้ใช้กดกระดิ่งตอนอยู่หน้านี้แล้ว
+watch(() => route.query.openId, async (newId) => {
+  if (newId) await checkAndOpenOrderFromQuery()
+})
+
+// --- Mobile Helpers ---
+const toggleMobileSidebar = () => showMobileSidebar.value = !showMobileSidebar.value
+const closeMobileSidebar = () => showMobileSidebar.value = false
+const handleToggle = (isCollapsed: boolean) => isSidebarCollapsed.value = isCollapsed
+// --- ฟังก์ชันที่คุณเรียกหา (ใส่กลับไปได้เลยครับ) ---
+const getOrdersByStatus = (status: string) => {
+  return orders.value.filter((order: any) => order.status === status)
+}
 const getStatusLabel = (status: string) => {
   const labels: any = {
     pending: 'รอดำเนินการ',
@@ -372,17 +393,6 @@ const getStatusLabel = (status: string) => {
   return labels[status] || status
 }
 
-// Get payment status class
-const getPaymentStatusClass = (status: string) => {
-  const classes: any = {
-    unpaid: 'warning',
-    paid: 'success',
-    refunded: 'danger'
-  }
-  return classes[status] || 'secondary'
-}
-
-// Get payment status label
 const getPaymentStatusLabel = (status: string) => {
   const labels: any = {
     unpaid: 'ยังไม่ชำระ',
@@ -391,51 +401,29 @@ const getPaymentStatusLabel = (status: string) => {
   }
   return labels[status] || status
 }
+// --- ข้อมูล User สำหรับ Sidebar/Header ---
+const userData = computed(() => ({
+  name: user.value?.profile?.full_name || 'ผู้ใช้งาน',
+  email: user.value?.email || '',
+  avatar: '👤'
+}))
+const menuItems = [
+  { id: "home", label: "หน้าแรก", icon: "🏠", roles: ["admin"] },
+  { id: "products", label: "สินค้า", icon: "📦", roles: ["admin", "customer"] },
+  { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
+  { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] },
+  { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },
+  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin", "customer"] },
+]
 
-// Format number
-const formatNumber = (num: number) => {
-  return new Intl.NumberFormat('th-TH', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(num)
-}
-
-// Format date
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-// Handle menu click
 const handleMenuClick = (item: any) => {
-  if (item.id === 'home') {
-    navigateTo('/dashboard')
-  } else if (item.id === 'products') {
-    navigateTo('/products')
-  } else if (item.id === 'orders') {
-    navigateTo('/orders')
-  }else if (item.id === 'customers') {
-    navigateTo('/customers')
-  }else if (item.id === 'reports') {
-     navigateTo('/reports')
+  const routes: any = {
+    home: '/dashboard', products: '/products', orders: '/orders',
+    customers: '/customers', reports: '/reports', settings: '/settings'
   }
-  else if (item.id === 'settings') {
-    navigateTo('/settings')
-  }
+  if (routes[item.id]) navigateTo(routes[item.id])
 }
-
-// Initialize
-onMounted(async () => {
-  await loadOrders()
-})
 </script>
-
 <style scoped>
 .dashboard-container {
   min-height: 100vh;

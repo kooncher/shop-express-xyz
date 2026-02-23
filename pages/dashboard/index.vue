@@ -65,44 +65,53 @@
           </div>
         </div>
 
-        <div class="card orders-card" v-if="!loading">
-          <h2 class="card-title">คำสั่งซื้อล่าสุด</h2>
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>รหัสคำสั่งซื้อ</th>
-                  <th>ลูกค้า</th>
-                  <th class="hide-mobile">ยอดรวม</th>
-                  <th>สถานะ</th>
-                  <th class="hide-mobile">วันที่</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="order in dashboardData?.recentOrders"
-                  :key="order.id"
-                >
-                  <td class="font-semibold">{{ order.order_number }}</td>
-                  <td>{{ order.customer_name }}</td>
-                  <td class="hide-mobile">
-                    ฿{{ order.total?.toLocaleString() }}
-                  </td>
-                  <td>
-                    <span
-                      :class="['badge', getStatusClass(order.payment_status)]"
-                    >
-                      {{ getStatusLabel(order.payment_status) }}
-                    </span>
-                  </td>
-                  <td class="hide-mobile">
-                    {{ formatDate(order.created_at) }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+       <div class="card orders-card" v-if="!loading">
+  <h2 class="card-title">คำสั่งซื้อล่าสุด</h2>
+  
+  <div class="desktop-only-view">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>รหัสคำสั่งซื้อ</th>
+            <th>ลูกค้า</th>
+            <th>ยอดรวม</th>
+            <th>สถานะ</th>
+            <th>วันที่</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="order in dashboardData?.recentOrders" :key="order.id">
+            <td class="font-semibold">{{ order.order_number }}</td>
+            <td>{{ order.customer_name }}</td>
+            <td>฿{{ order.total?.toLocaleString() }}</td>
+            <td>
+              <span :class="['badge', getStatusClass(order.payment_status)]">
+                {{ getStatusLabel(order.payment_status) }}
+              </span>
+            </td>
+            <td>{{ formatDate(order.created_at) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="mobile-only-view">
+    <div v-for="order in dashboardData?.recentOrders" :key="order.id" class="recent-order-item">
+      <div class="order-main-info">
+        <span class="order-id">{{ order.order_number }}</span>
+        <span :class="['badge-mini', getStatusClass(order.payment_status)]">
+          {{ getStatusLabel(order.payment_status) }}
+        </span>
+      </div>
+      <div class="order-sub-info">
+        <span class="customer-name">{{ order.customer_name }}</span>
+        <span class="order-amount">฿{{ order.total?.toLocaleString() }}</span>
+      </div>
+    </div>
+  </div>
+</div>
       </div>
     </main>
   </div>
@@ -452,5 +461,79 @@ const barChartConfig = computed(() => ({
   .mobile-menu-btn { display: flex; }
   .charts-grid { grid-template-columns: 1fr; }
   .hide-mobile { display: none !important; }
+}
+
+
+/* --- แก้ปัญหาการซ้อนทับและตาราง --- */
+.desktop-only-view { display: block; }
+.mobile-only-view { display: none; }
+
+/* จัดการ Stats Grid ให้แสดง 2 คอลัมน์บนมือถือ (ตามรูป image_902c34) */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  
+  .stat-card {
+    padding: 1rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.25rem !important;
+  }
+
+  /* สลับโหมดการแสดงผลตาราง */
+  .desktop-only-view { display: none !important; }
+  .mobile-only-view { display: block !important; }
+
+  /* ตกแต่งรายการคำสั่งซื้อบนมือถือ */
+  .recent-order-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .order-main-info, .order-sub-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .order-id {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #4f46e5;
+  }
+
+  .customer-name {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .order-amount {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .badge-mini {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+}
+
+/* แก้ไขปัญหา Header เบียดกับ Stats ในรูป image_902c34 */
+@media (max-width: 1024px) {
+  .content-wrapper {
+    padding: 1rem !important;
+    padding-bottom: 5rem !important; /* เว้นที่ให้ปุ่มเมนูด้านล่าง */
+  }
+
+  .page-header {
+    margin-bottom: 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>

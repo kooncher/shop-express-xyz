@@ -115,50 +115,49 @@
             </button>
           </div>
 
-          <div v-else class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>ชื่อ-นามสกุล</th>
-                  <th>อีเมล</th>
-                  <th>เบอร์โทร</th>
-                  <th>คำสั่งซื้อ</th>
-                  <th>ยอดซื้อรวม</th>
-                  <th>ซื้อล่าสุด</th>
-                  <th>สถานะ</th>
-                  <th>จัดการ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="customer in customers" :key="customer.id">
-                  <td class="font-semibold">{{ customer.name }}</td>
-                  <td class="text-muted">{{ customer.email || '-' }}</td>
-                  <td class="text-muted">{{ customer.phone || '-' }}</td>
-                  <td class="text-center">{{ customer.total_orders || 0 }}</td>
-                  <td class="font-semibold">฿{{ formatNumber(customer.total_spent || 0) }}</td>
-                  <td class="text-muted">{{ customer.last_order_date ? formatDate(customer.last_order_date) : '-' }}</td>
-                  <td>
-                    <span :class="['badge', customer.status === 'active' ? 'success' : 'secondary']">
-                      {{ customer.status === 'active' ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
-                    </span>
-                  </td>
-                  <td>
-                    <div class="action-buttons">
-                      <button @click="viewCustomer(customer)" class="btn-icon btn-view" title="ดูรายละเอียด">
-                        👁️
-                      </button>
-                      <button @click="openEditModal(customer)" class="btn-icon btn-edit" title="แก้ไข">
-                        ✏️
-                      </button>
-                      <button @click="confirmDelete(customer)" class="btn-icon btn-delete" title="ลบ">
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div v-else class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ลูกค้า</th>
+        <th>อีเมล</th>
+        <th>เบอร์โทร</th>
+        <th class="text-center">คำสั่งซื้อ</th>
+        <th>ยอดซื้อรวม</th>
+        <th>ซื้อล่าสุด</th>
+        <th>สถานะ</th>
+        <th>จัดการ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="customer in customers" :key="customer.id">
+        <td data-label="ลูกค้า" class="font-semibold">
+          <div class="customer-info-cell">
+            <span class="avatar-placeholder">{{ customer.name?.charAt(0) }}</span>
+            <span>{{ customer.name }}</span>
           </div>
+        </td>
+        <td data-label="อีเมล" class="text-muted">{{ customer.email || '-' }}</td>
+        <td data-label="เบอร์โทร" class="text-muted">{{ customer.phone || '-' }}</td>
+        <td data-label="คำสั่งซื้อ" class="text-center">{{ customer.total_orders || 0 }}</td>
+        <td data-label="ยอดซื้อรวม" class="font-semibold text-primary">฿{{ formatNumber(customer.total_spent || 0) }}</td>
+        <td data-label="ซื้อล่าสุด" class="text-muted">{{ customer.last_order_date ? formatDate(customer.last_order_date) : '-' }}</td>
+        <td data-label="สถานะ">
+          <span :class="['badge', customer.status === 'active' ? 'success' : 'secondary']">
+            {{ customer.status === 'active' ? 'ใช้งาน' : 'ไม่ใช้งาน' }}
+          </span>
+        </td>
+        <td data-label="จัดการ">
+          <div class="action-buttons">
+            <button @click="viewCustomer(customer)" class="btn-icon btn-view">👁️</button>
+            <button @click="openEditModal(customer)" class="btn-icon btn-edit">✏️</button>
+            <button @click="confirmDelete(customer)" class="btn-icon btn-delete">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
         </div>
       </div>
     </main>
@@ -854,23 +853,106 @@ onMounted(async () => {
 .line-open:nth-child(2) { opacity: 0; }
 .line-open:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
-/* --- Media Query: แสดงเฉพาะบนมือถือ --- */
+/* --- Desktop Styling สำหรับ Avatar --- */
+.customer-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  background: #6366f1;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* --- Mobile / Tablet Responsive (Card Layout) --- */
 @media (max-width: 1024px) {
-  .floating-hamburger-btn {
-    display: flex; /* แสดงปุ่มเฉพาะหน้าจอเล็ก */
+  .data-table thead {
+    display: none; /* ซ่อนหัวตาราง */
   }
 
-  /* แก้ไขส่วนที่เละ: เคลียร์ Margin ของหน้าหลักออก */
-  .main-content {
-    margin-left: 0 !important;
-    padding: 15px !important;
-    padding-top: 20px !important; /* เว้นที่ให้ Header */
+  .data-table tr {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   }
 
-  /* ป้องกันตารางล้น (เละแบบในรูป image_f3be03) */
-  .table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .data-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    width: 100%;
+    text-align: right;
+  }
+
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+
+  /* ปรับแต่งช่องลูกค้าให้เด่น (Header ของ Card) */
+  .data-table td[data-label="ลูกค้า"] {
+    background: #f8fafc;
+    margin: -1rem -1rem 0.5rem -1rem;
+    padding: 1rem;
+    border-radius: 1rem 1rem 0 0;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  /* ซ่อน Label ของ "จัดการ" และขยายปุ่มให้เต็ม */
+  .data-table td[data-label="จัดการ"] {
+    border-bottom: none;
+    padding-top: 1rem;
+    justify-content: center;
+  }
+
+  .data-table td[data-label="จัดการ"]::before {
+    display: none;
+  }
+
+  .action-buttons {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .btn-icon {
+    flex: 1;
+    height: 44px; /* ขนาดปุ่มในมือถือให้กดง่ายขึ้น */
+  }
+}
+
+/* ปรับปรุง Stats Grid ในมือถือ */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  
+  .stat-card {
+    padding: 0.8rem !important;
+    min-height: 80px;
+  }
+
+  .stat-value {
+    font-size: 1.15rem !important;
   }
 }
 </style>

@@ -1,14 +1,15 @@
 <template>
   <div class="dashboard-container">
     <!-- Mobile Menu Button -->
-<button class="floating-hamburger-btn" @click="toggleMobileSidebar">
+
+     <ClientOnly><button class="floating-hamburger-btn" @click="toggleMobileSidebar">
       <div class="hamburger-icon-wrapper">
         <span :class="{ 'line-open': showMobileSidebar }"></span>
         <span :class="{ 'line-open': showMobileSidebar }"></span>
         <span :class="{ 'line-open': showMobileSidebar }"></span>
       </div>
     </button>
-
+</ClientOnly>
     <!-- Mobile Overlay -->
     <div 
       v-if="showMobileSidebar" 

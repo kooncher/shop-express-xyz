@@ -21,7 +21,7 @@
               <div class="user-info">
                 <span class="u-name">{{ user?.email }}</span>
                 <span v-if="user?.profile?.role === 'admin'" class="u-role-badge">ADMIN</span>
-                <span v-else class="u-role">CUSTOMER</span>
+                <span v-else class="u-role-badge">CUSTOMER</span>
               </div>
             </ClientOnly>
 
@@ -46,9 +46,9 @@ const { user, signOut } = useAuth();
 const router = useRouter();
 
 const handleLogout = async () => {
-  if (confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
-    await signOut();
-    window.location.href = "/login";
+  const { error } = await signOut(); // ต้องมี await ตรงนี้
+  if (error) {
+    alert("เกิดข้อผิดพลาดในการออกจากระบบ: " + error.message);
   }
 };
 </script>
@@ -83,4 +83,5 @@ const handleLogout = async () => {
     gap: 0.75rem; /* ลดระยะห่างระหว่างกระดิ่งกับปุ่ม logout */
   }
 }
+
 </style>

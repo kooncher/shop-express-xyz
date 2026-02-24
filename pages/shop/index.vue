@@ -53,7 +53,7 @@
 
         <div class="shop-filter-bar">
           <div class="search-box">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"></span>
             <input
               v-model="searchQuery"
               type="text"
@@ -1021,11 +1021,35 @@ const addToCart = (product) => {
 
 .category-tags {
   display: flex;
-  gap: 0.5rem;
-  overflow-x: auto;
-  padding-bottom: 5px;
+  gap: 0.75rem;
+  overflow-x: auto; /* เปิดการเลื่อนแนวนอน */
+  padding: 0.5rem 0.25rem;
+  -webkit-overflow-scrolling: touch; /* เลื่อนลื่นๆ ใน iOS */
+  scrollbar-width: none; /* ซ่อน scrollbar (Firefox) */
 }
 
+.category-tags::-webkit-scrollbar {
+  display: none; /* ซ่อน scrollbar (Chrome, Safari) */
+}
+
+.tag {
+  flex: 0 0 auto; /* ป้องกันปุ่มหดตัว */
+  padding: 0.6rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748b;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tag.active {
+  background: #4f46e5;
+  color: #ffffff;
+  border-color: #4f46e5;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
 .tag {
   padding: 0.5rem 1.25rem;
   background: white;
@@ -1169,21 +1193,37 @@ const addToCart = (product) => {
 
 @media (max-width: 768px) {
   .product-grid {
-    grid-template-columns: repeat(2, 1fr); /* บนมือถือโชว์ 2 คอลัมน์คู่กัน */
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr) !important; /* บังคับ 2 คอลัมน์ */
+    gap: 12px !important;
+  }
+
+  .product-card {
+    border-radius: 1rem !important;
+  }
+
+  .product-image {
+    height: 160px !important; /* ลดความสูงรูปในมือถือ */
+    padding: 10px !important;
   }
 
   .product-info {
-    padding: 0.75rem;
+    padding: 0.75rem !important;
+  }
+
+  .product-name {
+    font-size: 0.95rem !important; /* ชื่อสินค้าเล็กลง */
+    height: 2.6rem !important; /* บล็อกความสูงไว้ */
+    margin-bottom: 0.5rem !important;
   }
 
   .product-price {
-    font-size: 1rem;
+    font-size: 1.1rem !important;
   }
 
   .btn-add-cart {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.8rem;
+    padding: 0.5rem !important;
+    font-size: 0.85rem !important;
+    border-radius: 0.5rem !important;
   }
 }
 
@@ -1285,5 +1325,26 @@ const addToCart = (product) => {
     grid-template-columns: 1fr; /* บนมือถือแสดงแถวละ 1 อันใหญ่ๆ */
     gap: 1.5rem;
   }
+}
+/* ค้นหา .search-box ใน style เดิม */
+.search-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 2px 12px;
+  transition: all 0.2s;
+}
+
+.search-box:focus-within {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.search-input {
+  border: none !important; /* เอา border เดิมออก */
+  box-shadow: none !important;
+  padding: 0.75rem 0.5rem !important;
 }
 </style>

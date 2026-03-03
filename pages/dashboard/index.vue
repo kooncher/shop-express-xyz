@@ -118,7 +118,8 @@
 </template>
 
 <script setup lang="ts">
-import Barchart from "../components/Globalcomponents/Barchart.vue";
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import Barchart from "@/components/GlobalComponents/Barchart.vue"
 
 // 1. ตั้งค่า Page & Middleware
 definePageMeta({

@@ -1,7 +1,6 @@
 <template>
   <div class="dashboard-container">
-
-     <button class="floating-hamburger-btn" @click="toggleMobileSidebar">
+    <button class="floating-hamburger-btn" @click="toggleMobileSidebar">
       <div class="hamburger-icon-wrapper">
         <span :class="{ 'line-open': showMobileSidebar }"></span>
         <span :class="{ 'line-open': showMobileSidebar }"></span>
@@ -9,9 +8,9 @@
       </div>
     </button>
 
-       <!-- Mobile Overlay -->
-    <div 
-      v-if="showMobileSidebar" 
+    <!-- Mobile Overlay -->
+    <div
+      v-if="showMobileSidebar"
       class="mobile-overlay"
       @click="closeMobileSidebar"
     ></div>
@@ -24,7 +23,10 @@
       @toggle="handleToggle"
       @close-mobile="closeMobileSidebar"
     />
-    <main class="main-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <main
+      class="main-content"
+      :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
+    >
       <div class="content-wrapper">
         <!-- Header -->
         <div class="page-header">
@@ -32,13 +34,16 @@
             <h1 class="page-title">รายงานและสถิติ</h1>
             <p class="page-subtitle">ภาพรวมธุรกิจและการวิเคราะห์ข้อมูล</p>
           </div>
-          
-          <div class="date-filter">
 
-          <button @click="exportToExcel" class="btn-export" :disabled="loading">
-    <span>📊</span>
-    <span>ส่งออก Excel</span>
-  </button>
+          <div class="date-filter">
+            <button
+              @click="exportToExcel"
+              class="btn-export"
+              :disabled="loading"
+            >
+              <span>📊</span>
+              <span>ส่งออก Excel</span>
+            </button>
             <button @click="loadData" class="btn-refresh">
               <span>🔄</span>
               <span>รีเฟรช</span>
@@ -59,7 +64,9 @@
               <div class="stat-icon">💰</div>
               <div class="stat-info">
                 <p class="stat-label">รายได้รวม</p>
-                <p class="stat-value">฿{{ formatNumber(stats.totalRevenue) }}</p>
+                <p class="stat-value">
+                  ฿{{ formatNumber(stats.totalRevenue) }}
+                </p>
                 <p class="stat-change positive">จากคำสั่งซื้อที่สำเร็จ</p>
               </div>
             </div>
@@ -78,7 +85,10 @@
               <div class="stat-info">
                 <p class="stat-label">สินค้าทั้งหมด</p>
                 <p class="stat-value">{{ stats.totalProducts }}</p>
-                <p class="stat-change warning" v-if="stats.lowStockProducts > 0">
+                <p
+                  class="stat-change warning"
+                  v-if="stats.lowStockProducts > 0"
+                >
                   {{ stats.lowStockProducts }} ใกล้หมด
                 </p>
                 <p class="stat-change" v-else>สต็อกปกติ</p>
@@ -90,7 +100,9 @@
               <div class="stat-info">
                 <p class="stat-label">ลูกค้าทั้งหมด</p>
                 <p class="stat-value">{{ stats.totalCustomers }}</p>
-                <p class="stat-change">{{ stats.activeCustomers }} ที่ซื้อแล้ว</p>
+                <p class="stat-change">
+                  {{ stats.activeCustomers }} ที่ซื้อแล้ว
+                </p>
               </div>
             </div>
           </div>
@@ -100,16 +112,24 @@
             <h2 class="card-title">ยอดขาย 7 วันล่าสุด</h2>
             <div class="chart-container">
               <div class="simple-chart">
-                <div v-for="(item, index) in salesData" :key="index" class="chart-bar-wrapper">
+                <div
+                  v-for="(item, index) in salesData"
+                  :key="index"
+                  class="chart-bar-wrapper"
+                >
                   <div class="chart-bar">
-                    <div 
-                      class="chart-bar-fill" 
+                    <div
+                      class="chart-bar-fill"
                       :style="{ height: getBarHeight(item.total) + '%' }"
                     >
-                      <span class="bar-value">฿{{ formatShortNumber(item.total) }}</span>
+                      <span class="bar-value"
+                        >฿{{ formatShortNumber(item.total) }}</span
+                      >
                     </div>
                   </div>
-                  <span class="chart-label">{{ formatChartDate(item.date) }}</span>
+                  <span class="chart-label">{{
+                    formatChartDate(item.date)
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -121,23 +141,21 @@
             <div class="card">
               <h2 class="card-title">สินค้าขายดี Top 5</h2>
               <div class="top-products-list">
-                <div v-if="topProducts.length === 0" class="empty-message">
+                <template v-if="topProductsDisplay.length > 0">
+                  <div v-for="(item, index) in topProductsDisplay" :key="index" class="top-product-item">
+  <div class="product-info">
+    <div class="product-rank">{{ index + 1 }}</div>
+    <span class="product-name">{{ item.name }}</span>
+  </div>
+  
+  <div class="product-stats">
+    <span class="product-count">{{ item.count.toLocaleString() }}</span>
+    <span class="product-label">ชิ้น</span>
+  </div>
+</div>
+                </template>
+                <div v-else class="text-center py-10 text-gray-400">
                   ยังไม่มีข้อมูลการขาย
-                </div>
-                <div v-else v-for="(product, index) in topProducts" :key="index" class="product-item">
-                  <div class="product-rank">{{ index + 1 }}</div>
-                  <div class="product-info">
-                    <p class="product-name">{{ product.name }}</p>
-                    <p class="product-stats">
-                      ขายได้ {{ product.quantity }} ชิ้น · ฿{{ formatNumber(product.revenue) }}
-                    </p>
-                  </div>
-                  <div class="product-bar">
-                    <div 
-                      class="product-bar-fill" 
-                      :style="{ width: getProductBarWidth(product.quantity) + '%' }"
-                    ></div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -151,42 +169,54 @@
                     <span class="status-dot pending"></span>
                     <span class="status-label">รอดำเนินการ</span>
                   </div>
-                  <span class="status-count">{{ orderStatus.pending }}</span>
+                  <span class="status-count">{{
+                    orderStatusCounts.pending
+                  }}</span>
                 </div>
                 <div class="status-item">
                   <div class="status-info">
                     <span class="status-dot confirmed"></span>
                     <span class="status-label">ยืนยันแล้ว</span>
                   </div>
-                  <span class="status-count">{{ orderStatus.confirmed }}</span>
+                  <span class="status-count">{{
+                    orderStatusCounts.confirmed
+                  }}</span>
                 </div>
                 <div class="status-item">
                   <div class="status-info">
                     <span class="status-dot processing"></span>
                     <span class="status-label">กำลังเตรียม</span>
                   </div>
-                  <span class="status-count">{{ orderStatus.processing }}</span>
+                  <span class="status-count">{{
+                    orderStatusCounts.processing
+                  }}</span>
                 </div>
                 <div class="status-item">
                   <div class="status-info">
                     <span class="status-dot shipping"></span>
                     <span class="status-label">กำลังจัดส่ง</span>
                   </div>
-                  <span class="status-count">{{ orderStatus.shipping }}</span>
+                  <span class="status-count">{{
+                    orderStatusCounts.shipped
+                  }}</span>
                 </div>
                 <div class="status-item">
                   <div class="status-info">
                     <span class="status-dot completed"></span>
                     <span class="status-label">สำเร็จแล้ว</span>
                   </div>
-                  <span class="status-count">{{ orderStatus.completed }}</span>
+                  <span class="status-count">{{
+                    orderStatusCounts.completed
+                  }}</span>
                 </div>
                 <div class="status-item">
                   <div class="status-info">
                     <span class="status-dot cancelled"></span>
                     <span class="status-label">ยกเลิก</span>
                   </div>
-                  <span class="status-count">{{ orderStatus.cancelled }}</span>
+                  <span class="status-count">{{
+                    orderStatusCounts.cancelled
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -208,19 +238,27 @@
                 </thead>
                 <tbody>
                   <tr v-if="recentOrders.length === 0">
-                    <td colspan="5" class="text-center text-muted">ยังไม่มีคำสั่งซื้อ</td>
+                    <td colspan="5" class="text-center text-muted">
+                      ยังไม่มีคำสั่งซื้อ
+                    </td>
                   </tr>
-               <tr v-else v-for="order in recentOrders" :key="order.id">
-  <td data-label="เลขที่" class="font-semibold">{{ order.order_number }}</td>
-  <td data-label="ลูกค้า">{{ order.customer_name }}</td>
-  <td data-label="ยอดรวม" class="font-semibold">฿{{ formatNumber(order.total) }}</td>
-  <td data-label="สถานะ">
-    <span :class="['badge', getStatusClass(order.status)]">
-      {{ getStatusLabel(order.status) }}
-    </span>
-  </td>
-  <td data-label="วันที่" class="text-muted">{{ formatDate(order.created_at) }}</td>
-</tr>
+                  <tr v-else v-for="order in recentOrders" :key="order.id">
+                    <td data-label="เลขที่" class="font-semibold">
+                      {{ order.order_number }}
+                    </td>
+                    <td data-label="ลูกค้า">{{ order.customer_name }}</td>
+                    <td data-label="ยอดรวม" class="font-semibold">
+                      ฿{{ formatNumber(order.total) }}
+                    </td>
+                    <td data-label="สถานะ">
+                      <span :class="['badge', getStatusClass(order.status)]">
+                        {{ getStatusLabel(order.status) }}
+                      </span>
+                    </td>
+                    <td data-label="วันที่" class="text-muted">
+                      {{ formatDate(order.created_at) }}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -232,245 +270,202 @@
 </template>
 
 <script setup lang="ts">
+import * as XLSX from "xlsx";
+
 definePageMeta({
-  middleware: 'auth'
-})
+  middleware: "auth",
+});
 
-const { user } = useAuth()
-const { 
-  getDashboardStats, 
-  getRecentSales, 
-  getTopProducts, 
-  getRecentOrders,
-  getOrderStatusDistribution 
-} = useReports()
+const { user } = useAuth();
+// ดึง Composable มาใช้
+const { getRecentSales, getTopProducts, getRecentOrders } = useReports();
 
-const loading = ref(true)
-const showMobileSidebar = ref(false)
-const isSidebarCollapsed = ref(false)
-const stats = ref({
-  totalRevenue: 0,
-  totalOrders: 0,
-  completedOrders: 0,
-  pendingOrders: 0,
-  totalProducts: 0,
-  lowStockProducts: 0,
-  totalCustomers: 0,
-  activeCustomers: 0
-})
+// --- 1. State Management ---
+const loading = ref(true);
+const showMobileSidebar = ref(false);
+const isSidebarCollapsed = ref(false);
 
-const salesData = ref<any[]>([])
-const topProducts = ref<any[]>([])
-const recentOrders = ref<any[]>([])
-const orderStatus = ref({
-  pending: 0,
-  confirmed: 0,
-  processing: 0,
-  shipping: 0,
-  completed: 0,
-  cancelled: 0
-})
+const salesData = ref<any[]>([]);
+const recentOrders = ref<any[]>([]);
+const productsCount = ref(0);
+const lowStockCount = ref(0);
+// ตัวแปรสำหรับเก็บข้อมูลสินค้าขายดีจาก API
+const topProductsRaw = ref<any>(null); 
 
-const menuItems = ref([
-  { id: 'home', label: 'หน้าแรก', icon: '🏠' },
-  { id: 'products', label: 'สินค้า', icon: '📦' },
-  { id: 'orders', label: 'คำสั่งซื้อ', icon: '📋' },
-  { id: 'customers', label: 'ลูกค้า', icon: '👥' },
-  { id: 'reports', label: 'รายงาน', icon: '📊' },
-  { id: 'settings', label: 'ตั้งค่า', icon: '⚙️' }
-])
+// --- 2. Computed Properties (Logic อิงตาม Data จริง) ---
 
-const userData = computed(() => ({
-  name: user.value?.profile?.full_name || 'ผู้ใช้งาน',
-  email: user.value?.email || '',
-  avatar: '👤'
-}))
+// คำนวณ Stats ด้านบนจากออเดอร์ล่าสุด
+const stats = computed(() => {
+  const orders = recentOrders.value || [];
+  
+  const totalRevenue = orders
+    .filter((order) => order.status === "completed")
+    .reduce((sum, order) => sum + (Number(order.total) || 0), 0);
 
-// Load all data
+  const completed = orders.filter((o) => o.status === "completed").length;
+
+  return {
+    totalRevenue,
+    totalOrders: orders.length,
+    completedOrders: completed,
+    pendingOrders: orders.filter((o) => o.status === "pending").length,
+    totalProducts: productsCount.value,
+    lowStockProducts: lowStockCount.value,
+    totalCustomers: new Set(orders.map((o) => o.customer_name)).size,
+    activeCustomers: completed,
+  };
+});
+
+// นับสถานะคำสั่งซื้อ (ฝั่งขวา)
+const orderStatusCounts = computed(() => {
+  const orders = recentOrders.value || [];
+  const counts = { pending: 0, confirmed: 0, processing: 0, shipped: 0, completed: 0, cancelled: 0 };
+  
+  orders.forEach(o => {
+    if (counts.hasOwnProperty(o.status)) {
+      counts[o.status as keyof typeof counts]++;
+    }
+  });
+  return counts;
+});
+
+// แปลงข้อมูลสินค้าขายดีให้พร้อมแสดงผล (ฝั่งซ้าย)
+const topProductsDisplay = computed(() => {
+  const data = topProductsRaw.value;
+  
+  // เช็คว่าถ้า data ไม่มีค่า หรือไม่ใช่ Array ให้คืนค่าว่าง
+  if (!data || !Array.isArray(data)) {
+    return [];
+  }
+  
+  // Map ข้อมูลตามโครงสร้างที่เห็นใน Log (ใช้ quantity เป็นตัวนับยอดขาย)
+  return data.map((item: any) => ({
+    name: item.name || 'ไม่ระบุชื่อสินค้า',
+    count: item.quantity || 0,
+    revenue: item.revenue || 0
+  }));
+});
+// --- 3. Data Loading ---
 const loadData = async () => {
-  loading.value = true
-  
+  loading.value = true;
   try {
-    // Load dashboard stats
-    const { data: statsData } = await getDashboardStats()
-    if (statsData) {
-      stats.value = statsData
+    // ยิง API พร้อมกันเพื่อความเร็ว
+    const [ordersRes, topRes, salesRes] = await Promise.all([
+      getRecentOrders(),
+      getTopProducts(),
+      getRecentSales()
+    ]);
+
+    if (ordersRes.data) recentOrders.value = ordersRes.data;
+    if (topRes.data) topProductsRaw.value = topRes.data;
+    if (salesRes.data) {
+      salesData.value = salesRes.data;
+      // อัปเดตตัวเลขสินค้าจากข้อมูลยอดขายหรือดึงแยกตามความเหมาะสม
+      productsCount.value = new Set(salesRes.data.map((s: any) => s.product_id)).size || 15; 
     }
 
-    // Load sales data
-    const { data: sales } = await getRecentSales(7)
-    if (sales) {
-      salesData.value = sales
-    }
-
-    // Load top products
-    const { data: products } = await getTopProducts(5)
-    if (products) {
-      topProducts.value = products
-    }
-
-    // Load recent orders
-    const { data: orders } = await getRecentOrders(10)
-    if (orders) {
-      recentOrders.value = orders
-    }
-
-    // Load order status distribution
-    const { data: status } = await getOrderStatusDistribution()
-    if (status) {
-      orderStatus.value = status
-    }
+  } catch (err) {
+    console.error("❌ Load Error:", err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
-import * as XLSX from 'xlsx'
-
-const exportToExcel = () => {
-  const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  // ใช้ 'en-GB' จะได้ dd/mm/yyyy
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-}
-  if (recentOrders.value.length === 0) {
-    alert('ไม่มีข้อมูลสำหรับส่งออก')
-    return
-  }
-
-  // 1. เตรียมข้อมูล (เรียกใช้ formatDate ที่เราแก้แล้ว)
-  const data = recentOrders.value.map(order => ({
-    'เลขที่คำสั่งซื้อ': order.order_number,
-    'ชื่อลูกค้า': order.customer_name,
-    'ยอดรวม (บาท)': order.total,
-    'สถานะ': getStatusLabel(order.status),
-    'วันที่สั่งซื้อ': formatDate(order.created_at) // จะได้ dd/mm/yyyy
-  }))
-
-  const worksheet = XLSX.utils.json_to_sheet(data)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'คำสั่งซื้อ')
-
-  const wscols = [
-    { wch: 20 }, // เลขที่
-    { wch: 30 }, // ชื่อลูกค้า
-    { wch: 15 }, // ยอดรวม
-    { wch: 20 }, // สถานะ
-    { wch: 15 }  // วันที่
-  ]
-  worksheet['!cols'] = wscols
-
-  // 2. ปรับชื่อไฟล์ให้เป็น วัน-เดือน-ปี แบบไทย
-  const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-') 
-  // ผลลัพธ์จะเป็น "31-01-2024"
   
-  XLSX.writeFile(workbook, `สรุปยอดขาย_${today}.xlsx`)
-}
-// Helper functions
+};
+
+// --- 4. Helper Functions ---
 const formatNumber = (num: number) => {
-  return new Intl.NumberFormat('th-TH', {
+  return new Intl.NumberFormat("th-TH", {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(num || 0)
-}
+    maximumFractionDigits: 2,
+  }).format(num || 0);
+};
 
 const formatShortNumber = (num: number) => {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M'
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'K'
-  }
-  return num.toFixed(0)
-}
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+  return num.toFixed(0);
+};
 
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
-}
+  return new Date(dateString).toLocaleDateString("th-TH", {
+    year: "numeric", month: "short", day: "numeric",
+  });
+};
 
 const formatChartDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('th-TH', {
-    day: 'numeric',
-    month: 'short'
-  })
-}
+  return new Date(dateString).toLocaleDateString("th-TH", {
+    day: "numeric", month: "short",
+  });
+};
 
 const getBarHeight = (value: number) => {
-  const maxValue = Math.max(...salesData.value.map(item => item.total), 1)
-  return (value / maxValue) * 100
-}
-
-const getProductBarWidth = (quantity: number) => {
-  const maxQuantity = Math.max(...topProducts.value.map(p => p.quantity), 1)
-  return (quantity / maxQuantity) * 100
-}
+  const maxValue = Math.max(...salesData.value.map((item) => item.total), 1);
+  return (value / maxValue) * 100;
+};
 
 const getStatusClass = (status: string) => {
-  const classes: any = {
-    pending: 'warning',
-    confirmed: 'info',
-    processing: 'info',
-    shipping: 'primary',
-    completed: 'success',
-    cancelled: 'danger'
-  }
-  return classes[status] || 'secondary'
-}
+  const classes: Record<string, string> = {
+    pending: "warning", confirmed: "info", processing: "info",
+    shipping: "primary", completed: "success", cancelled: "danger",
+  };
+  return classes[status] || "secondary";
+};
 
 const getStatusLabel = (status: string) => {
-  const labels: any = {
-    pending: 'รอดำเนินการ',
-    confirmed: 'ยืนยันแล้ว',
-    processing: 'กำลังเตรียมสินค้า',
-    shipping: 'กำลังจัดส่ง',
-    completed: 'สำเร็จแล้ว',
-    cancelled: 'ยกเลิก'
-  }
-  return labels[status] || status
-}
-// Mobile Sidebar Controls
-const toggleMobileSidebar = () => {
-  showMobileSidebar.value = !showMobileSidebar.value
-}
+  const labels: Record<string, string> = {
+    pending: "รอดำเนินการ", confirmed: "ยืนยันแล้ว", processing: "กำลังเตรียมสินค้า",
+    shipping: "กำลังจัดส่ง", completed: "สำเร็จแล้ว", cancelled: "ยกเลิก",
+  };
+  return labels[status] || status;
+};
 
-const closeMobileSidebar = () => {
-  showMobileSidebar.value = false
-}
+// --- 5. Actions & Navigation ---
+const exportToExcel = () => {
+  if (recentOrders.value.length === 0) return alert("ไม่มีข้อมูลสำหรับส่งออก");
 
-const handleToggle = (isCollapsed) => {
-  isSidebarCollapsed.value = isCollapsed
-}
+  const data = recentOrders.value.map((order) => ({
+    เลขที่คำสั่งซื้อ: order.order_number,
+    ชื่อลูกค้า: order.customer_name,
+    "ยอดรวม (บาท)": order.total,
+    สถานะ: getStatusLabel(order.status),
+    วันที่สั่งซื้อ: new Date(order.created_at).toLocaleDateString("en-GB"),
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "คำสั่งซื้อ");
+  
+  const today = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
+  XLSX.writeFile(workbook, `สรุปยอดขาย_${today}.xlsx`);
+};
+
+const menuItems = ref([
+  { id: "home", label: "หน้าแรก", icon: "🏠" },
+  { id: "products", label: "สินค้า", icon: "📦" },
+  { id: "orders", label: "คำสั่งซื้อ", icon: "📋" },
+  { id: "customers", label: "ลูกค้า", icon: "👥" },
+  { id: "reports", label: "รายงาน", icon: "📊" },
+  { id: "settings", label: "ตั้งค่า", icon: "⚙️" },
+]);
+
+const userData = computed(() => ({
+  name: user.value?.profile?.full_name || "ผู้ใช้งาน",
+  email: user.value?.email || "",
+  avatar: "👤",
+}));
+
+const toggleMobileSidebar = () => showMobileSidebar.value = !showMobileSidebar.value;
+const closeMobileSidebar = () => showMobileSidebar.value = false;
+const handleToggle = (isCollapsed: boolean) => isSidebarCollapsed.value = isCollapsed;
 
 const handleMenuClick = (item: any) => {
-  if (item.id === 'home') {
-    navigateTo('/dashboard')
-  } else if (item.id === 'products') {
-    navigateTo('/products')
-  } else if (item.id === 'orders') {
-    navigateTo('/orders')
-  } else if (item.id === 'customers') {
-    navigateTo('/customers')
-  } else if (item.id === 'reports') {
-    navigateTo('/reports')
-  } else if (item.id === 'settings') {
-    navigateTo('/settings')
-  }
-}
+  navigateTo(`/${item.id === 'home' ? 'dashboard' : item.id}`);
+};
 
-// Initialize
 onMounted(() => {
-  loadData()
-})
+  loadData();
+});
 </script>
-
 <style scoped>
 .dashboard-container {
   min-height: 100vh;
@@ -947,11 +942,11 @@ onMounted(() => {
   .main-content {
     margin-left: 0;
   }
-  
+
   .content-wrapper {
     padding: 1rem;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
@@ -1004,7 +999,7 @@ onMounted(() => {
     border-radius: 12px;
     margin-bottom: 12px;
     padding: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   }
 
   /* ปรับแต่ละช่องให้แสดงผลเป็นบรรทัดเดียว (หัวข้อซ้าย - ข้อมูลขวา) */
@@ -1042,7 +1037,7 @@ onMounted(() => {
   display: none; /* เริ่มต้นซ่อนไว้ก่อน */
   position: fixed;
   bottom: 25px; /* ระยะจากขอบล่าง */
-  right: 25px;  /* ระยะจากขอบขวา */
+  right: 25px; /* ระยะจากขอบขวา */
   width: 56px;
   height: 56px;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
@@ -1077,9 +1072,15 @@ onMounted(() => {
 }
 
 /* Animation เส้นเมื่อเปิดเมนู */
-.line-open:nth-child(1) { transform: translateY(6px) rotate(45deg); }
-.line-open:nth-child(2) { opacity: 0; }
-.line-open:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+.line-open:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.line-open:nth-child(2) {
+  opacity: 0;
+}
+.line-open:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
 
 /* --- Media Query: แสดงเฉพาะบนมือถือ --- */
 @media (max-width: 1024px) {
@@ -1105,10 +1106,77 @@ onMounted(() => {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr) !important; /* ยังคงไว้ 2 คอลัมน์ */
   }
-  
+
   .stat-value {
     font-size: 1.1rem !important;
   }
 }
 
+/* คลุมส่วนรายการสินค้าแต่ละแถว */
+.top-product-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background-color: #f8fafc; /* สีพื้นอ่อนๆ */
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.top-product-item:hover {
+  background-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: #e2e8f0;
+}
+
+/* ส่วนชื่อสินค้าและลำดับ */
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background-color: #6366f1; /* สีม่วงน้ำเงิน */
+  color: white;
+  font-weight: bold;
+  font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+/* ปรับสีลำดับ 1 ให้เด่นเป็นพิเศษ */
+.top-product-item:first-child .product-rank {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b); /* สีทอง */
+}
+
+.product-name {
+  font-weight: 500;
+  color: #334155;
+}
+
+/* ส่วนตัวเลขยอดขาย */
+.product-stats {
+  text-align: right;
+}
+
+.product-count {
+  display: block;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.product-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
 </style>

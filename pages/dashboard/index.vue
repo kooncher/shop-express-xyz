@@ -65,51 +65,42 @@
           </div>
         </div>
 
-       <div class="card orders-card" v-if="!loading">
+        <div class="card orders-card">
   <h2 class="card-title">คำสั่งซื้อล่าสุด</h2>
-  
-  <div class="desktop-only-view">
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>รหัสคำสั่งซื้อ</th>
-            <th>ลูกค้า</th>
-            <th>ยอดรวม</th>
-            <th>สถานะ</th>
-            <th>วันที่</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="order in dashboardData?.recentOrders" :key="order.id">
-            <td class="font-semibold">{{ order.order_number }}</td>
-            <td>{{ order.customer_name }}</td>
-            <td>฿{{ order.total?.toLocaleString() }}</td>
-            <td>
-              <span :class="['badge', getStatusClass(order.payment_status)]">
-                {{ getStatusLabel(order.payment_status) }}
-              </span>
-            </td>
-            <td>{{ formatDate(order.created_at) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="mobile-only-view">
-    <div v-for="order in dashboardData?.recentOrders" :key="order.id" class="recent-order-item">
-      <div class="order-main-info">
-        <span class="order-id">{{ order.order_number }}</span>
-        <span :class="['badge-mini', getStatusClass(order.payment_status)]">
-          {{ getStatusLabel(order.payment_status) }}
-        </span>
-      </div>
-      <div class="order-sub-info">
-        <span class="customer-name">{{ order.customer_name }}</span>
-        <span class="order-amount">฿{{ order.total?.toLocaleString() }}</span>
-      </div>
-    </div>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>เลขที่</th>
+          <th>ลูกค้า</th>
+          <th>ยอดรวม</th>
+          <th>สถานะ</th>
+          <th>วันที่</th>
+        </tr>
+      </thead>
+ <tbody>
+  <tr v-if="dashboardData?.recentOrders.length === 0">
+    <td colspan="5" class="empty-message">ยังไม่มีคำสั่งซื้อ</td>
+  </tr>
+  <tr v-else v-for="order in dashboardData?.recentOrders" :key="order.id" class="mobile-order-card">
+    <td data-label="เลขที่" class="order-number-cell font-semibold">
+      {{ order.order_number }}
+    </td>
+    <td data-label="ลูกค้า">{{ order.customer_name }}</td>
+    <td data-label="ยอดรวม">
+      <span class="price-text font-semibold">฿{{ formatNumber(order.total) }}</span>
+    </td>
+    <td data-label="สถานะ">
+      <span :class="['badge', getStatusClass(order.status)]">
+        {{ getStatusLabel(order.status) }}
+      </span>
+    </td>
+    <td data-label="วันที่" class="date-cell">
+      {{ formatDate(order.created_at) }}
+    </td>
+  </tr>
+</tbody>
+    </table>
   </div>
 </div>
       </div>
@@ -118,19 +109,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import Barchart from "@/components/GlobalComponents/Barchart.vue"
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import Barchart from "@/components/GlobalComponents/Barchart.vue";
 
 // 1. ตั้งค่า Page & Middleware
 definePageMeta({
-  middleware: 'auth'
+  middleware: "auth",
 });
 
 // 2. ดึง Utilities
 const { user } = useAuth();
 const { getAllDashboardData } = useDashboard();
 const { $supabase } = useNuxtApp();
-const roleCookie = useCookie('user-role');
+const roleCookie = useCookie("user-role");
 
 // 3. สถานะหลัก (State)
 const loading = ref(true);
@@ -142,10 +133,13 @@ const currentPage = ref("หน้าแรก");
 
 // 4. ข้อมูลผู้ใช้ (Computed เพื่อความเสถียรตอนรีเฟรช)
 const userData = computed(() => ({
-  name: user.value?.user_metadata?.full_name ?? user.value?.profile?.full_name ?? "ผู้ใช้งาน",
+  name:
+    user.value?.user_metadata?.full_name ??
+    user.value?.profile?.full_name ??
+    "ผู้ใช้งาน",
   email: user.value?.email ?? "",
   avatar: "👤",
-  role: roleCookie.value || 'customer'
+  role: roleCookie.value || "customer",
 }));
 
 // 5. เมนูที่มีการกำหนด Role
@@ -155,13 +149,18 @@ const menuItems = [
   { id: "orders", label: "คำสั่งซื้อ", icon: "📋", roles: ["admin"] },
   { id: "customers", label: "ลูกค้า", icon: "👥", roles: ["admin"] },
   { id: "reports", label: "รายงาน", icon: "📊", roles: ["admin"] },
-  { id: "shop", label: "ร้านค้า", icon: "🛒", roles: ['customer', 'admin'] },
-  { id: "settings", label: "ตั้งค่า", icon: "⚙️", roles: ["admin", "customer"] }
+  {
+    id: "settings",
+    label: "ตั้งค่า",
+    icon: "⚙️",
+    roles: ["admin", "customer"],
+  },
 ];
 
 // 6. ข้อมูลสถิติ (Computed จาก Dashboard Data)
 const statsData = computed(() => ({
-  ยอดขายวันนี้: "฿" + (dashboardData.value?.stats?.totalSales?.toLocaleString() ?? 0),
+  ยอดขายวันนี้:
+    "฿" + (dashboardData.value?.stats?.totalSales?.toLocaleString() ?? 0),
   คำสั่งซื้อใหม่: dashboardData.value?.stats?.newOrdersCount ?? 0,
   ลูกค้าใหม่: dashboardData.value?.stats?.newCustomersCount ?? 0,
   สินค้าคงเหลือ: dashboardData.value?.stats?.totalStock?.toLocaleString() ?? 0,
@@ -187,7 +186,7 @@ const checkScreenSize = () => {
 
 const handleLogout = async () => {
   const { $supabase } = useNuxtApp(); // 👈 ต้องมีบรรทัดนี้เพื่อดึงตัวจัดการ Supabase มา
-  const roleCookie = useCookie('user-role');
+  const roleCookie = useCookie("user-role");
 
   try {
     // 1. สั่ง SignOut ไปที่ Server (ใช้เวลาแป๊บนึง)
@@ -196,13 +195,13 @@ const handleLogout = async () => {
     console.error("Supabase SignOut Error:", err);
   } finally {
     // 2. ไม่ว่าข้างบนจะพังหรือไม่ เราต้องล้างค่าในเครื่องทิ้งให้หมด
-    roleCookie.value = null; 
-    
+    roleCookie.value = null;
+
     // 3. ใช้ navigateTo แบบ 'replace' เพื่อไม่ให้กดปุ่ม Back กลับมาหน้านี้ได้อีก
-    await navigateTo('/login', { replace: true });
-    
+    await navigateTo("/login", { replace: true });
+
     // 4. บังคับรีเฟรช 1 ครั้งเพื่อเคลียร์ State ที่ค้างอยู่ในหน่วยความจำ (Option เสริมเพื่อความชัวร์)
-    window.location.reload(); 
+    window.location.reload();
   }
 };
 // 8. Lifecycle Hooks (รวมศูนย์ที่เดียว)
@@ -218,7 +217,8 @@ onUnmounted(() => {
 
 // 9. UI Helpers (คงเดิมทั้งหมด)
 const handleToggle = (val: boolean) => (isSidebarCollapsed.value = val);
-const toggleMobileSidebar = () => (showMobileSidebar.value = !showMobileSidebar.value);
+const toggleMobileSidebar = () =>
+  (showMobileSidebar.value = !showMobileSidebar.value);
 const closeMobileSidebar = () => (showMobileSidebar.value = false);
 
 const handleMenuClick = (item: any) => {
@@ -229,13 +229,27 @@ const handleMenuClick = (item: any) => {
 };
 
 const formatDate = (d: string) =>
-  d ? new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : "-";
+  d
+    ? new Date(d).toLocaleDateString("th-TH", {
+        day: "numeric",
+        month: "short",
+      })
+    : "-";
 
-const getStatusLabel = (s: string) =>
-  ({ unpaid: "รอชำระ", paid: "ชำระแล้ว", completed: "สำเร็จ" })[s] || s;
-
-const getStatusClass = (s: string) =>
-  s === "paid" || s === "completed" || s === "ชำระแล้ว" ? "success" : "warning";
+const getStatusLabel = (status: string) => {
+  const labels: Record<string, string> = {
+    pending: "รอดำเนินการ", confirmed: "ยืนยันแล้ว", processing: "กำลังเตรียมสินค้า",
+    shipping: "กำลังจัดส่ง", completed: "สำเร็จแล้ว", cancelled: "ยกเลิก",
+  };
+  return labels[status] || status;
+};
+const getStatusClass = (status: string) => {
+  const classes: Record<string, string> = {
+    pending: "warning", confirmed: "info", processing: "info",
+    shipping: "primary", completed: "success", cancelled: "danger",
+  };
+  return classes[status] || "secondary";
+};
 
 // 10. Chart Configs (คงเดิมทั้งหมด)
 const salesChartConfig = computed(() => ({
@@ -273,22 +287,55 @@ const salesChartConfig = computed(() => ({
     },
   },
 }));
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat("th-TH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num || 0);
+};
 
-const barChartConfig = computed(() => ({
-  type: "bar" as const,
-  data: {
-    labels: dashboardData.value?.topProducts?.names || [],
-    datasets: [
-      {
-        label: "ยอดขายรายสินค้า",
-        data: dashboardData.value?.topProducts?.sales || [],
-        backgroundColor: "#818cf8",
-        borderRadius: 8,
+// กราฟแท่ง: สินค้าขายดี Top 5 (ดึงตามโครงสร้างใหม่จาก useDashboard)
+const barChartConfig = computed(() => {
+  const topProducts = dashboardData.value?.topProducts;
+
+  // ดึง names และ sales ตามที่ประกาศไว้ใน productMap.map(...)
+  const labels = topProducts?.names || [];
+  const values = topProducts?.sales || [];
+
+  return {
+    type: "bar" as const,
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "ยอดขายรวม (บาท)",
+          data: values,
+          backgroundColor: "#818cf8",
+          borderRadius: 8,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: (context: any) => `ยอดขาย: ฿${context.raw.toLocaleString()}`,
+          },
+        },
       },
-    ],
-  },
-  options: { responsive: true, maintainAspectRatio: false },
-}));
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (value: any) => "฿" + value.toLocaleString(),
+          },
+        },
+      },
+    },
+  };
+});
 </script>
 
 <style scoped>
@@ -370,57 +417,108 @@ const barChartConfig = computed(() => ({
   color: #1e293b;
   margin-bottom: 1.5rem;
 }
+/* คอนเทนเนอร์หลักของตาราง */
 .orders-card {
   background: white;
   padding: 1.5rem;
-  border-radius: 1rem;
-  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
+
 .table-container {
   overflow-x: auto;
-  margin-top: 1rem;
 }
+
 .data-table {
   width: 100%;
   border-collapse: collapse;
 }
+
+.data-table thead tr {
+  border-bottom: 2px solid #e5e7eb;
+}
+
 .data-table th {
-  padding: 1rem;
   text-align: left;
-  color: #64748b;
-  border-bottom: 2px solid #f1f5f9;
+  padding: 1rem;
   font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
 }
+
+.data-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s;
+}
+
+.data-table tbody tr:hover {
+  background: #f9fafb;
+}
+
 .data-table td {
-  padding: 1.25rem 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  color: #1e293b;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: #111827;
 }
+
+.text-center {
+  text-align: center;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.text-muted {
+  color: #6b7280;
+}
+
 .badge {
-  padding: 0.35rem 0.85rem;
-  border-radius: 99px;
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
 }
+
 .badge.success {
-  background: #dcfce7;
-  color: #166534;
+  background: #d1fae5;
+  color: #065f46;
 }
+
 .badge.warning {
   background: #fef3c7;
   color: #92400e;
 }
-.font-semibold {
-  font-weight: 600;
+
+.badge.danger {
+  background: #fee2e2;
+  color: #991b1b;
 }
+
+.badge.info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge.primary {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 .skeleton-pulse {
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Mobile Responsive */
@@ -458,72 +556,81 @@ const barChartConfig = computed(() => ({
 }
 
 @media (max-width: 1024px) {
-  .main-content { margin-left: 0 !important; }
-  .mobile-menu-btn { display: flex; }
-  .charts-grid { grid-template-columns: 1fr; }
-  .hide-mobile { display: none !important; }
+  .main-content {
+    margin-left: 0 !important;
+  }
+  .mobile-menu-btn {
+    display: flex;
+  }
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .hide-mobile {
+    display: none !important;
+  }
 }
-
 
 /* --- แก้ปัญหาการซ้อนทับและตาราง --- */
-.desktop-only-view { display: block; }
-.mobile-only-view { display: none; }
-
-/* จัดการ Stats Grid ให้แสดง 2 คอลัมน์บนมือถือ (ตามรูป image_902c34) */
-@media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
-  }
-  
-  .stat-card {
-    padding: 1rem !important;
-  }
-
-  .stat-value {
-    font-size: 1.25rem !important;
-  }
-
-  /* สลับโหมดการแสดงผลตาราง */
-  .desktop-only-view { display: none !important; }
-  .mobile-only-view { display: block !important; }
-
-  /* ตกแต่งรายการคำสั่งซื้อบนมือถือ */
-  .recent-order-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #f1f5f9;
-  }
-
-  .order-main-info, .order-sub-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .order-id {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: #4f46e5;
-  }
-
-  .customer-name {
-    font-size: 0.85rem;
-    color: #64748b;
-  }
-
-  .order-amount {
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-
-  .badge-mini {
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-  }
+.desktop-only-view {
+  display: block;
+}
+.mobile-only-view {
+  display: none;
 }
 
+@media (max-width: 768px) {
+  /* 1. บังคับให้ตารางหายไป เปลี่ยนเป็นกล่อง Card */
+  .data-table, .data-table tbody, .data-table tr, .data-table td {
+    display: block !important; /* บังคับเป็นบล็อกเพื่อให้กินพื้นที่เต็มบรรทัด */
+    width: 100%;
+  }
+
+  .data-table thead {
+    display: none; /* ซ่อนหัวตารางแบบเดิม */
+  }
+
+  /* 2. จัดการตัว Card */
+  .data-table tr.mobile-order-card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  }
+
+  /* 3. จัดการบรรทัดข้อมูลใน Card */
+  .data-table td {
+    display: flex !important; /* ใช้ flex เพื่อแยก Label กับ Value */
+    justify-content: space-between; /* ✨ ดัน Label ไปซ้ายสุด Value ไปขวาสุด */
+    align-items: center;
+    padding: 0.8rem 1rem !important;
+    border-bottom: 1px solid #f8fafc;
+    text-align: right;
+  }
+
+  .data-table td:last-child {
+    border-bottom: none;
+  }
+
+  /* 4. จัดการ Label ฝั่งซ้าย */
+  .data-table td::before {
+    content: attr(data-label);
+    font-weight: 500;
+    color: #64748b; /* สีเทาเข้มขึ้นนิดนึงให้อ่านง่าย */
+    flex-shrink: 0; /* ป้องกัน Label ถูกบีบ */
+    margin-right: 1rem;
+    text-align: left;
+  }
+
+  /* 5. ปรับตัวเลข Order ให้เด่น (ส่วนที่เป็น Header ของ Card) */
+  .order-number-cell {
+    background: #f8faff;
+    border-radius: 8px 8px 0 0;
+    color: #4f46e5 !important;
+    font-weight: 700 !important;
+  }
+}
 /* แก้ไขปัญหา Header เบียดกับ Stats ในรูป image_902c34 */
 @media (max-width: 1024px) {
   .content-wrapper {

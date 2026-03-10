@@ -753,9 +753,6 @@ onMounted(async () => {
     min-width: 100%;
   }
   
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
 
   /* --- ส่วน Stats Grid: ปรับให้เรียง 2 คอลัมน์แบบในรูป --- */
   .stats-grid {
@@ -875,6 +872,11 @@ onMounted(async () => {
 
 /* --- Mobile / Tablet Responsive (Card Layout) --- */
 @media (max-width: 1024px) {
+
+
+  .floating-hamburger-btn {
+    display: flex; /* แสดงปุ่มเฉพาะหน้าจอเล็ก */
+  }
   .data-table thead {
     display: none; /* ซ่อนหัวตาราง */
   }
@@ -910,11 +912,11 @@ onMounted(async () => {
 
   /* ปรับแต่งช่องลูกค้าให้เด่น (Header ของ Card) */
   .data-table td[data-label="ลูกค้า"] {
-    background: #f8fafc;
+    /* background: #f8fafc;
     margin: -1rem -1rem 0.5rem -1rem;
     padding: 1rem;
     border-radius: 1rem 1rem 0 0;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0; */
   }
 
   /* ซ่อน Label ของ "จัดการ" และขยายปุ่มให้เต็ม */
@@ -941,10 +943,10 @@ onMounted(async () => {
 
 /* ปรับปรุง Stats Grid ในมือถือ */
 @media (max-width: 768px) {
-  .stats-grid {
+  /* .stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 12px !important;
-  }
+  } */
   
   .stat-card {
     padding: 0.8rem !important;

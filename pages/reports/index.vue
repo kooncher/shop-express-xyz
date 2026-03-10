@@ -937,18 +937,44 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 }
-
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-  }
-
-  .content-wrapper {
-    padding: 1rem;
-  }
-
+@media (max-width: 640px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr; /* แสดง 2 คอลัมน์คู่กัน */
+    gap: 0.75rem; /* ลดช่องว่างลงเพื่อให้มีพื้นที่แสดงเนื้อหา */
+  }
+
+  .stat-card {
+    flex-direction: column; /* ปรับไอคอนให้อยู่บน ข้อความอยู่ล่าง */
+    align-items: flex-start;
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .stat-icon {
+    width: 2.5rem; height: 2.5rem; /* ย่อขนาดไอคอน */
+    font-size: 1.25rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem; /* ย่อขนาดตัวเลขไม่ให้ล้นการ์ด */
+  }
+}
+@media (max-width: 768px) {
+  .data-table td {
+    padding: 10px 12px;
+    min-height: 45px; /* กันความสูงเพี้ยน */
+  }
+
+  /* ปรับให้ข้อความในช่องไม่เบียดกับหัวข้อเกินไป */
+  .data-table td::before {
+    flex: 1; /* ให้หัวข้อฝั่งซ้ายจองพื้นที่ไว้ */
+    padding-right: 15px;
+  }
+  
+  /* ตัวข้อมูลจริงฝั่งขวา */
+  .data-table td {
+    text-align: right;
+    justify-content: space-between;
   }
 }
 .btn-export {
@@ -975,15 +1001,8 @@ onMounted(() => {
   cursor: not-allowed;
 }
 /* --- Media Queries สำหรับมือถือและแท็บเล็ต --- */
-@media (max-width: 1024px) {
-  .main-content {
-    margin-left: 0 !important; /* เคลียร์ sidebar margin */
-  }
 
-  .two-column-layout {
-    grid-template-columns: 1fr; /* สินค้าขายดี กับ สถานะ ปรับเป็นแนวตั้ง */
-  }
-}
+
 
 @media (max-width: 768px) {
   /* ซ่อนหัวตารางแบบปกติ */

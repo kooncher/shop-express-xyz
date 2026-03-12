@@ -159,11 +159,10 @@ const menuItems = [
 
 // 6. ข้อมูลสถิติ (Computed จาก Dashboard Data)
 const statsData = computed(() => ({
-  ยอดขายวันนี้:
-    "฿" + (dashboardData.value?.stats?.totalSales?.toLocaleString() ?? 0),
-  คำสั่งซื้อใหม่: dashboardData.value?.stats?.newOrdersCount ?? 0,
-  ลูกค้าใหม่: dashboardData.value?.stats?.newCustomersCount ?? 0,
-  สินค้าคงเหลือ: dashboardData.value?.stats?.totalStock?.toLocaleString() ?? 0,
+  "ยอดขายวันนี้": "฿" + (dashboardData.value?.stats?.today_sales?.toLocaleString() ?? 0),
+  "คำสั่งซื้อใหม่": dashboardData.value?.stats?.new_orders_count ?? 0,
+  "ลูกค้าใหม่": dashboardData.value?.stats?.new_customers_count ?? 0,
+  "สินค้าคงเหลือ": (dashboardData.value?.stats?.total_stock ?? 0).toLocaleString(),
 }));
 
 // 7. ฟังก์ชันโหลดข้อมูลและจัดการหน้าจอ
@@ -215,7 +214,7 @@ onUnmounted(() => {
   window.removeEventListener("resize", checkScreenSize);
 });
 
-// 9. UI Helpers (คงเดิมทั้งหมด)
+// 9. UI Helpers
 const handleToggle = (val: boolean) => (isSidebarCollapsed.value = val);
 const toggleMobileSidebar = () =>
   (showMobileSidebar.value = !showMobileSidebar.value);

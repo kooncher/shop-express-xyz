@@ -275,7 +275,7 @@ const loadProducts = async () => {
     if (filterActive.value) {
       query = query.eq('is_active', filterActive.value === 'true')
     }
-
+//ilike: คือการค้นหาข้อความแบบ ไม่สนใจตัวพิมพ์เล็ก-ใหญ่
     if (searchQuery.value) {
       query = query.or(`name.ilike.%${searchQuery.value}%,sku.ilike.%${searchQuery.value}%`)
     }

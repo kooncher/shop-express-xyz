@@ -271,8 +271,7 @@ definePageMeta({
 });
 
 const { user } = useAuth();
-const { getOrders, deleteOrder, updateOrderStatus, updatePaymentStatus } =
-  useOrders();
+const { getOrders, deleteOrder, updateOrderStatus, updatePaymentStatus } =useOrders();
 const loading = ref(true);
 const orders = ref([]);
 const searchQuery = ref("");
@@ -310,11 +309,11 @@ const userData = computed(() => ({
 
 // Load orders
 const loadOrders = async () => {
-  console.log("กำลังดึงข้อมูลออเดอร์ของ ID:", user.value?.profile?.id);
+  // console.log("กำลังดึงข้อมูลออเดอร์ของ ID:", user.value?.profile?.id);
   loading.value = true;
   try {
     // ดึง ID จาก profile เหมือนที่คุณใช้ใน console.log ก่อนหน้านี้
-    const userId = user.value?.profile?.id; 
+    const userId = user.value?.profile?.id;
 
     if (!userId) {
       console.error("User ID not found!");
@@ -325,7 +324,7 @@ const loadOrders = async () => {
       customer_id: userId, // ส่ง ID ที่ถูกต้องไป
       status: filterStatus.value,
       payment_status: filterPaymentStatus.value,
-      search: searchQuery.value
+      search: searchQuery.value,
     });
 
     if (!error && data) {
@@ -337,13 +336,12 @@ const loadOrders = async () => {
     loading.value = false;
   }
 };
-const payOrder = (order) => {
+const payOrder = (order: any) => { 
   selectedOrderForPayment.value = order;
   showPaymentModal.value = true;
 };
 // ฟังก์ชันสำหรับกดยกเลิก
 const confirmCancel = (order: any) => {
-  // ใช้ ConfirmModal เดิมที่คุณมีอยู่แล้ว
   orderToDelete.value = order;
   showDeleteConfirm.value = true;
 };
@@ -400,7 +398,7 @@ const closeMobileSidebar = () => {
   showMobileSidebar.value = false;
 };
 
-const handleToggle = (isCollapsed) => {
+const handleToggle = (isCollapsed: boolean) => {
   isSidebarCollapsed.value = isCollapsed;
 };
 
@@ -418,16 +416,7 @@ const getOrdersByStatus = (status: string) => {
   return orders.value.filter((order: any) => order.status === status);
 };
 
-// Modal handlers - ส่วนที่หายไป
-const openCreateModal = () => {
-  selectedOrder.value = null;
-  showModal.value = true;
-};
 
-const openEditModal = (order: any) => {
-  selectedOrder.value = { ...order };
-  showModal.value = true;
-};
 
 const viewOrder = (order: any) => {
   selectedOrder.value = order;
@@ -451,24 +440,6 @@ const handleSave = async () => {
 
 const handleUpdateStatus = async () => {
   await loadOrders();
-};
-
-const confirmDelete = (order: any) => {
-  orderToDelete.value = order;
-  showDeleteConfirm.value = true;
-};
-
-const handleDelete = async () => {
-  if (orderToDelete.value) {
-    const { error } = await deleteOrder(orderToDelete.value.id);
-
-    if (!error) {
-      await loadOrders();
-    }
-  }
-
-  showDeleteConfirm.value = false;
-  orderToDelete.value = null;
 };
 
 // Get status class

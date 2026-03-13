@@ -64,6 +64,7 @@
 
           <div class="category-container">
             <div class="category-tags">
+            <!-- ปุ่มหมวดหมู่ ในอนาคตจะดึงจาก api -->
               <button
                 v-for="item in [
                   'ทั้งหมด',

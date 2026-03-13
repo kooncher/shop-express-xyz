@@ -6,12 +6,17 @@
         <div class="brand">
           <div class="brand-logo">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect width="28" height="28" rx="8" fill="url(#logo-grad)"/>
-              <path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+              <rect width="28" height="28" rx="8" fill="url(#logo-grad)" />
+              <path
+                d="M8 10h12M8 14h8M8 18h10"
+                stroke="#fff"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
               <defs>
                 <linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28">
-                  <stop stop-color="#3b82f6"/>
-                  <stop offset="1" stop-color="#8b5cf6"/>
+                  <stop stop-color="#3b82f6" />
+                  <stop offset="1" stop-color="#8b5cf6" />
                 </linearGradient>
               </defs>
             </svg>
@@ -33,7 +38,7 @@
         <div class="gradient-orb orb-2"></div>
         <div class="grid-pattern"></div>
       </div>
-      
+
       <div class="hero-content">
         <div class="hero-text">
           <div class="badge">
@@ -45,21 +50,39 @@
             <span class="highlight">อย่างมืออาชีพ</span>
           </h1>
           <p class="hero-desc">
-            ระบบจัดการสินค้า คำสั่งซื้อ และลูกค้าที่ใช้งานง่าย 
+            ระบบจัดการสินค้า คำสั่งซื้อ และลูกค้าที่ใช้งานง่าย
             ออกแบบมาเพื่อธุรกิจไทยโดยเฉพาะ
           </p>
-          
+
           <div class="hero-cta">
             <NuxtLink to="/register" class="btn-primary">
               <span>เริ่มต้นใช้งานฟรี</span>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </NuxtLink>
             <button class="btn-secondary" @click="scrollToFeatures">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polygon
+                  points="10,8 16,12 10,16"
+                  fill="currentColor"
+                  stroke="none"
+                />
               </svg>
               <span>ดูวิธีใช้งาน</span>
             </button>
@@ -82,7 +105,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Dashboard Preview -->
         <div class="preview-container">
           <div class="preview-window">
@@ -94,63 +117,122 @@
               </div>
               <div class="window-title">ShopExpressXYZ - Dashboard</div>
             </div>
-            
+
             <div class="preview-body">
               <div class="preview-sidebar">
                 <div class="sidebar-logo">🛒</div>
                 <div class="sidebar-menu">
                   <div class="menu-item active">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                      <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="3" y="3" width="7" height="7" />
+                      <rect x="14" y="3" width="7" height="7" />
+                      <rect x="3" y="14" width="7" height="7" />
+                      <rect x="14" y="14" width="7" height="7" />
                     </svg>
                   </div>
                   <div class="menu-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                      />
                     </svg>
                   </div>
                   <div class="menu-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                      <path
+                        d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                      />
                     </svg>
                   </div>
                   <div class="menu-item">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                      <circle cx="9" cy="7" r="4"/>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path
+                        d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+                      />
                     </svg>
                   </div>
                 </div>
               </div>
-              
+
               <div class="preview-main">
                 <div class="preview-top">
                   <h3 class="preview-title">ภาพรวมวันนี้</h3>
                   <div class="preview-date">{{ currentDate }}</div>
                 </div>
-                
+
                 <div class="stats-grid">
                   <div class="stat-card">
                     <div class="stat-card-icon blue">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path
+                          d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
+                        />
                       </svg>
                     </div>
                     <div class="stat-card-info">
-                      <span class="stat-card-value">฿{{ animatedSales.toLocaleString() }}</span>
+                      <span class="stat-card-value"
+                        >฿{{ animatedSales.toLocaleString() }}</span
+                      >
                       <span class="stat-card-label">ยอดขายวันนี้</span>
                     </div>
                     <span class="stat-card-trend up">+18%</span>
                   </div>
-                  
+
                   <div class="stat-card">
                     <div class="stat-card-icon green">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path
+                          d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                        />
                       </svg>
                     </div>
                     <div class="stat-card-info">
@@ -159,67 +241,88 @@
                     </div>
                     <span class="stat-card-trend up">+5</span>
                   </div>
-                  
+
                   <div class="stat-card">
                     <div class="stat-card-icon purple">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
                       </svg>
                     </div>
                     <div class="stat-card-info">
-                      <span class="stat-card-value">{{ animatedCustomers }}</span>
+                      <span class="stat-card-value">{{
+                        animatedCustomers
+                      }}</span>
                       <span class="stat-card-label">ลูกค้าใหม่</span>
                     </div>
                     <span class="stat-card-trend up">+12</span>
                   </div>
                 </div>
-                
+
                 <!-- Chart -->
                 <div class="chart-container">
                   <div class="chart-header">
                     <span class="chart-title">ยอดขาย 7 วันล่าสุด</span>
-                    <span class="chart-total">฿{{ weeklyTotal.toLocaleString() }}</span>
+                    <span class="chart-total"
+                      >฿{{ weeklyTotal.toLocaleString() }}</span
+                    >
                   </div>
                   <div class="chart-area">
                     <div class="chart-bars">
-                      <div 
-                        v-for="(bar, i) in chartBars" 
-                        :key="i" 
+                      <div
+                        v-for="(bar, i) in chartBars"
+                        :key="i"
                         class="chart-bar-wrapper"
                       >
-                        <div 
-                          class="chart-bar" 
+                        <div
+                          class="chart-bar"
                           :style="{ height: bar.height + '%' }"
                         >
-                          <span class="bar-tooltip">฿{{ bar.value.toLocaleString() }}</span>
+                          <span class="bar-tooltip"
+                            >฿{{ bar.value.toLocaleString() }}</span
+                          >
                         </div>
                         <span class="bar-label">{{ bar.day }}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <!-- Recent Orders -->
                 <div class="orders-container">
                   <div class="orders-header">
                     <span class="orders-title">คำสั่งซื้อล่าสุด</span>
                   </div>
                   <div class="orders-list">
-                    <div class="order-item" v-for="order in recentOrders" :key="order.id">
+                    <div
+                      class="order-item"
+                      v-for="order in recentOrders"
+                      :key="order.id"
+                    >
                       <div class="order-info">
                         <span class="order-id">{{ order.id }}</span>
                         <span class="order-customer">{{ order.customer }}</span>
                       </div>
-                      <span class="order-amount">฿{{ order.amount.toLocaleString() }}</span>
-                      <span :class="['order-status', order.status]">{{ order.statusText }}</span>
+                      <span class="order-amount"
+                        >฿{{ order.amount.toLocaleString() }}</span
+                      >
+                      <span :class="['order-status', order.status]">{{
+                        order.statusText
+                      }}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          
+
           <!-- Floating Notifications -->
           <div class="float-notification notif-1">
             <div class="notif-icon success">✓</div>
@@ -228,7 +331,7 @@
               <span class="notif-desc">+฿1,850 จาก คุณสมศรี</span>
             </div>
           </div>
-          
+
           <div class="float-notification notif-2">
             <div class="notif-icon warning">📦</div>
             <div class="notif-content">
@@ -236,7 +339,7 @@
               <span class="notif-desc">เสื้อยืดสีขาว เหลือ 3 ชิ้น</span>
             </div>
           </div>
-          
+
           <div class="float-notification notif-3">
             <div class="notif-icon info">👤</div>
             <div class="notif-content">
@@ -266,10 +369,14 @@
     <section id="features" class="features">
       <div class="section-header">
         <span class="section-tag">ฟีเจอร์</span>
-        <h2>ทุกอย่างที่ต้องการ<br/><span class="highlight">จัดการได้ในที่เดียว</span></h2>
+        <h2>
+          ทุกอย่างที่ต้องการ<br /><span class="highlight"
+            >จัดการได้ในที่เดียว</span
+          >
+        </h2>
         <p>ออกแบบมาให้ใช้งานง่าย ไม่ต้องเป็น IT ก็ใช้ได้</p>
       </div>
-      
+
       <div class="features-grid">
         <div class="feature-card" v-for="(feature, i) in features" :key="i">
           <div :class="['feature-icon', feature.color]">
@@ -279,8 +386,15 @@
           <p>{{ feature.desc }}</p>
           <ul class="feature-list">
             <li v-for="(item, j) in feature.items" :key="j">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                <polyline points="20 6 9 17 4 12"/>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+              >
+                <polyline points="20 6 9 17 4 12" />
               </svg>
               {{ item }}
             </li>
@@ -288,8 +402,6 @@
         </div>
       </div>
     </section>
-
-
 
     <!-- CTA -->
     <section class="cta">
@@ -302,12 +414,21 @@
         <div class="cta-buttons">
           <NuxtLink to="/register" class="btn-cta-primary">
             สมัครฟรี — ใช้ได้เลย
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </NuxtLink>
         </div>
-        <p class="cta-note">✓ ฟรีตลอดชีพสำหรับร้านค้าเล็ก ✓ ไม่มีค่าธรรมเนียมแอบแฝง</p>
+        <p class="cta-note">
+          ✓ ฟรีตลอดชีพสำหรับร้านค้าเล็ก ✓ ไม่มีค่าธรรมเนียมแอบแฝง
+        </p>
       </div>
     </section>
 
@@ -318,12 +439,28 @@
           <div class="brand">
             <div class="brand-logo">
               <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-                <rect width="28" height="28" rx="8" fill="url(#logo-grad-footer)"/>
-                <path d="M8 10h12M8 14h8M8 18h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+                <rect
+                  width="28"
+                  height="28"
+                  rx="8"
+                  fill="url(#logo-grad-footer)"
+                />
+                <path
+                  d="M8 10h12M8 14h8M8 18h10"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
                 <defs>
-                  <linearGradient id="logo-grad-footer" x1="0" y1="0" x2="28" y2="28">
-                    <stop stop-color="#3b82f6"/>
-                    <stop offset="1" stop-color="#8b5cf6"/>
+                  <linearGradient
+                    id="logo-grad-footer"
+                    x1="0"
+                    y1="0"
+                    x2="28"
+                    y2="28"
+                  >
+                    <stop stop-color="#3b82f6" />
+                    <stop offset="1" stop-color="#8b5cf6" />
                   </linearGradient>
                 </defs>
               </svg>
@@ -353,134 +490,155 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: false })
+definePageMeta({ layout: false });
 
-const { user, initAuth } = useAuth()
+const { user, initAuth } = useAuth();
 
 // State
-const isScrolled = ref(false)
-const animatedSales = ref(0)
-const animatedOrders = ref(0)
-const animatedCustomers = ref(0)
+const isScrolled = ref(false);
+const animatedSales = ref(0);
+const animatedOrders = ref(0);
+const animatedCustomers = ref(0);
 
 // Data
 const currentDate = computed(() => {
-  return new Date().toLocaleDateString('th-TH', { 
-    day: 'numeric', 
-    month: 'short', 
-    year: 'numeric' 
-  })
-})
+  return new Date().toLocaleDateString("th-TH", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+});
 
 const chartBars = ref([
-  { day: 'จ', value: 12400, height: 0 },
-  { day: 'อ', value: 18200, height: 0 },
-  { day: 'พ', value: 15800, height: 0 },
-  { day: 'พฤ', value: 22100, height: 0 },
-  { day: 'ศ', value: 28500, height: 0 },
-  { day: 'ส', value: 35200, height: 0 },
-  { day: 'อา', value: 24600, height: 0 },
-])
+  { day: "จ", value: 12400, height: 0 },
+  { day: "อ", value: 18200, height: 0 },
+  { day: "พ", value: 15800, height: 0 },
+  { day: "พฤ", value: 22100, height: 0 },
+  { day: "ศ", value: 28500, height: 0 },
+  { day: "ส", value: 35200, height: 0 },
+  { day: "อา", value: 24600, height: 0 },
+]);
 
 const weeklyTotal = computed(() => {
-  return chartBars.value.reduce((sum, bar) => sum + bar.value, 0)
-})
+  return chartBars.value.reduce((sum, bar) => sum + bar.value, 0);
+});
 
 const recentOrders = [
-  { id: 'ORD-001', customer: 'คุณสมศรี', amount: 1850, status: 'success', statusText: 'สำเร็จ' },
-  { id: 'ORD-002', customer: 'คุณวิชัย', amount: 3200, status: 'pending', statusText: 'รอจัดส่ง' },
-  { id: 'ORD-003', customer: 'คุณนภา', amount: 890, status: 'success', statusText: 'สำเร็จ' },
-]
+  {
+    id: "ORD-001",
+    customer: "คุณสมศรี",
+    amount: 1850,
+    status: "success",
+    statusText: "สำเร็จ",
+  },
+  {
+    id: "ORD-002",
+    customer: "คุณวิชัย",
+    amount: 3200,
+    status: "pending",
+    statusText: "รอจัดส่ง",
+  },
+  {
+    id: "ORD-003",
+    customer: "คุณนภา",
+    amount: 890,
+    status: "success",
+    statusText: "สำเร็จ",
+  },
+];
 
 const features = [
   {
-    icon: '📦',
-    title: 'จัดการสินค้า',
-    desc: 'ระบบจัดการสินค้าที่ครบครัน',
-    color: 'blue',
-    items: ['เพิ่ม/แก้ไขสินค้าง่าย', 'ติดตามสต็อกอัตโนมัติ', 'แจ้งเตือนสินค้าใกล้หมด']
+    icon: "📦",
+    title: "จัดการสินค้า",
+    desc: "ระบบจัดการสินค้าที่ครบครัน",
+    color: "blue",
+    items: [
+      "เพิ่ม/แก้ไขสินค้าง่าย",
+      "ติดตามสต็อกอัตโนมัติ",
+      "แจ้งเตือนสินค้าใกล้หมด",
+    ],
   },
   {
-    icon: '🛒',
-    title: 'คำสั่งซื้อ',
-    desc: 'จัดการออเดอร์แบบเรียลไทม์',
-    color: 'green',
-    items: ['รับออเดอร์ทันที', 'อัพเดทสถานะง่าย', 'พิมพ์ใบเสร็จ/ใบส่งของ']
+    icon: "🛒",
+    title: "คำสั่งซื้อ",
+    desc: "จัดการออเดอร์แบบเรียลไทม์",
+    color: "green",
+    items: ["รับออเดอร์ทันที", "อัพเดทสถานะง่าย", "พิมพ์ใบเสร็จ/ใบส่งของ"],
   },
   {
-    icon: '👥',
-    title: 'ข้อมูลลูกค้า',
-    desc: 'บริหารความสัมพันธ์ลูกค้า',
-    color: 'purple',
-    items: ['บันทึกประวัติการซื้อ', 'แบ่งกลุ่มลูกค้า', 'วิเคราะห์พฤติกรรม']
+    icon: "👥",
+    title: "ข้อมูลลูกค้า",
+    desc: "บริหารความสัมพันธ์ลูกค้า",
+    color: "purple",
+    items: ["บันทึกประวัติการซื้อ", "แบ่งกลุ่มลูกค้า", "วิเคราะห์พฤติกรรม"],
   },
   {
-    icon: '📊',
-    title: 'รายงาน',
-    desc: 'วิเคราะห์ธุรกิจด้วยข้อมูล',
-    color: 'orange',
-    items: ['กราฟยอดขาย', 'สินค้าขายดี Top 10', 'รายงานกำไร/ขาดทุน']
-  }
-]
-
+    icon: "📊",
+    title: "รายงาน",
+    desc: "วิเคราะห์ธุรกิจด้วยข้อมูล",
+    color: "orange",
+    items: ["กราฟยอดขาย", "สินค้าขายดี Top 10", "รายงานกำไร/ขาดทุน"],
+  },
+];
 
 // Animation functions
 const animateValue = (ref: Ref<number>, target: number, duration: number) => {
-  const start = 0
-  const startTime = performance.now()
-  
+  const start = 0;
+  const startTime = performance.now();
+
   const update = (currentTime: number) => {
-    const elapsed = currentTime - startTime
-    const progress = Math.min(elapsed / duration, 1)
-    const easeOut = 1 - Math.pow(1 - progress, 3)
-    ref.value = Math.floor(start + (target - start) * easeOut)
-    
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    ref.value = Math.floor(start + (target - start) * easeOut);
+
     if (progress < 1) {
-      requestAnimationFrame(update)
+      requestAnimationFrame(update);
     }
-  }
-  
-  requestAnimationFrame(update)
-}
+  };
+
+  requestAnimationFrame(update);
+};
 
 const animateChart = () => {
-  const maxValue = Math.max(...chartBars.value.map(b => b.value))
+  const maxValue = Math.max(...chartBars.value.map((b) => b.value));
   chartBars.value.forEach((bar, i) => {
     setTimeout(() => {
-      bar.height = (bar.value / maxValue) * 100
-    }, i * 100)
-  })
-}
+      bar.height = (bar.value / maxValue) * 100;
+    }, i * 100);
+  });
+};
 
 const scrollToFeatures = () => {
-  document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
-}
+  document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+};
 
 // Lifecycle
 onMounted(async () => {
-  await initAuth()
+  await initAuth();
   if (user.value) {
-    navigateTo('/dashboard')
-    return
+    navigateTo("/dashboard");
+    return;
   }
-  
+
   // Scroll handler
-  window.addEventListener('scroll', () => {
-    isScrolled.value = window.scrollY > 50
-  })
-  
+  window.addEventListener("scroll", () => {
+    isScrolled.value = window.scrollY > 50;
+  });
+
   // Start animations
   setTimeout(() => {
-    animateValue(animatedSales, 48250, 2000)
-    animateValue(animatedOrders, 24, 1500)
-    animateValue(animatedCustomers, 18, 1500)
-    animateChart()
-  }, 500)
-})
+    animateValue(animatedSales, 48250, 2000);
+    animateValue(animatedOrders, 24, 1500);
+    animateValue(animatedCustomers, 18, 1500);
+    animateChart();
+  }, 500);
+});
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap");
 
 * {
   margin: 0;
@@ -489,7 +647,11 @@ onMounted(async () => {
 }
 
 .landing {
-  font-family: 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    "Noto Sans Thai",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   background: #fafbfc;
   color: #0f172a;
   overflow-x: hidden;
@@ -615,7 +777,7 @@ nav.scrolled {
 .grid-pattern {
   position: absolute;
   inset: 0;
-  background-image: 
+  background-image:
     linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
   background-size: 60px 60px;
@@ -655,8 +817,13 @@ nav.scrolled {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .hero-text h1 {
@@ -759,7 +926,7 @@ nav.scrolled {
 .preview-window {
   background: white;
   border-radius: 20px;
-  box-shadow: 
+  box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.05),
     0 25px 80px rgba(0, 0, 0, 0.12);
   overflow: hidden;
@@ -786,9 +953,15 @@ nav.scrolled {
   background: #e2e8f0;
 }
 
-.control.close { background: #f87171; }
-.control.minimize { background: #fbbf24; }
-.control.maximize { background: #4ade80; }
+.control.close {
+  background: #f87171;
+}
+.control.minimize {
+  background: #fbbf24;
+}
+.control.maximize {
+  background: #4ade80;
+}
 
 .window-title {
   font-size: 0.75rem;
@@ -883,9 +1056,18 @@ nav.scrolled {
   justify-content: center;
 }
 
-.stat-card-icon.blue { background: #eff6ff; color: #3b82f6; }
-.stat-card-icon.green { background: #f0fdf4; color: #22c55e; }
-.stat-card-icon.purple { background: #faf5ff; color: #a855f7; }
+.stat-card-icon.blue {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+.stat-card-icon.green {
+  background: #f0fdf4;
+  color: #22c55e;
+}
+.stat-card-icon.purple {
+  background: #faf5ff;
+  color: #a855f7;
+}
 
 .stat-card-value {
   font-size: 1.25rem;
@@ -1097,9 +1279,15 @@ nav.scrolled {
   font-size: 1rem;
 }
 
-.notif-icon.success { background: #dcfce7; }
-.notif-icon.warning { background: #fef3c7; }
-.notif-icon.info { background: #eff6ff; }
+.notif-icon.success {
+  background: #dcfce7;
+}
+.notif-icon.warning {
+  background: #fef3c7;
+}
+.notif-icon.info {
+  background: #eff6ff;
+}
 
 .notif-content {
   display: flex;
@@ -1136,8 +1324,13 @@ nav.scrolled {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
 /* Trusted */
@@ -1239,10 +1432,18 @@ nav.scrolled {
   margin-bottom: 1.25rem;
 }
 
-.feature-icon.blue { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
-.feature-icon.green { background: linear-gradient(135deg, #f0fdf4, #dcfce7); }
-.feature-icon.purple { background: linear-gradient(135deg, #faf5ff, #f3e8ff); }
-.feature-icon.orange { background: linear-gradient(135deg, #fff7ed, #ffedd5); }
+.feature-icon.blue {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+.feature-icon.green {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+}
+.feature-icon.purple {
+  background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+}
+.feature-icon.orange {
+  background: linear-gradient(135deg, #fff7ed, #ffedd5);
+}
 
 .feature-card h3 {
   font-size: 1.25rem;
@@ -1276,7 +1477,6 @@ nav.scrolled {
   flex-shrink: 0;
 }
 
-
 /* CTA */
 .cta {
   position: relative;
@@ -1298,9 +1498,17 @@ nav.scrolled {
 .cta-gradient {
   position: absolute;
   inset: 0;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.15), transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.15), transparent 50%);
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(59, 130, 246, 0.15),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 50%,
+      rgba(139, 92, 246, 0.15),
+      transparent 50%
+    );
 }
 
 .cta-content {
@@ -1427,30 +1635,30 @@ footer {
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .hero-desc {
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
   }
-  
+
   .hero-cta {
     justify-content: center;
   }
-  
+
   .hero-stats {
     justify-content: center;
   }
-  
+
   .preview-container {
     max-width: 600px;
     margin: 0 auto;
   }
-  
+
   .float-notification {
     display: none;
   }
-  
+
   .features-grid {
     grid-template-columns: 1fr;
   }
@@ -1460,84 +1668,84 @@ footer {
   nav {
     padding: 0.875rem 1rem;
   }
-  
+
   .nav-links a:not(.btn-signup) {
     display: none;
   }
-  
+
   .hero {
     padding: 6rem 1rem 3rem;
   }
-  
+
   .hero-text h1 {
     font-size: 2.25rem;
   }
-  
+
   .hero-cta {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .hero-stats {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .stat-divider {
     display: none;
   }
-  
+
   .preview-body {
     flex-direction: column;
   }
-  
+
   .preview-sidebar {
     flex-direction: row;
     width: 100%;
     padding: 0.75rem;
     justify-content: center;
   }
-  
+
   .sidebar-logo {
     margin-bottom: 0;
     margin-right: 1rem;
   }
-  
+
   .sidebar-menu {
     display: flex;
     gap: 0.25rem;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .features {
     padding: 4rem 1rem;
   }
-  
+
   .section-header h2 {
     font-size: 1.75rem;
   }
-  
+
   .cta {
     margin: 1.5rem 1rem;
     padding: 3rem 1.5rem;
   }
-  
+
   .cta h2 {
     font-size: 1.5rem;
   }
-  
+
   .footer-inner {
     flex-direction: column;
     gap: 2rem;
   }
-  
+
   .footer-links {
     gap: 2rem;
   }
-  
+
   .trusted-logos {
     gap: 1.5rem;
   }

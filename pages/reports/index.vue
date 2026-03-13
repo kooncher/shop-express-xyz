@@ -142,17 +142,23 @@
               <h2 class="card-title">สินค้าขายดี Top 5</h2>
               <div class="top-products-list">
                 <template v-if="topProductsDisplay.length > 0">
-                  <div v-for="(item, index) in topProductsDisplay" :key="index" class="top-product-item">
-  <div class="product-info">
-    <div class="product-rank">{{ index + 1 }}</div>
-    <span class="product-name">{{ item.name }}</span>
-  </div>
-  
-  <div class="product-stats">
-    <span class="product-count">{{ item.count.toLocaleString() }}</span>
-    <span class="product-label">ชิ้น</span>
-  </div>
-</div>
+                  <div
+                    v-for="(item, index) in topProductsDisplay"
+                    :key="index"
+                    class="top-product-item"
+                  >
+                    <div class="product-info">
+                      <div class="product-rank">{{ index + 1 }}</div>
+                      <span class="product-name">{{ item.name }}</span>
+                    </div>
+
+                    <div class="product-stats">
+                      <span class="product-count">{{
+                        item.count.toLocaleString()
+                      }}</span>
+                      <span class="product-label">ชิ้น</span>
+                    </div>
+                  </div>
                 </template>
                 <div v-else class="text-center py-10 text-gray-400">
                   ยังไม่มีข้อมูลการขาย
@@ -290,14 +296,14 @@ const recentOrders = ref<any[]>([]);
 const productsCount = ref(0);
 const lowStockCount = ref(0);
 // ตัวแปรสำหรับเก็บข้อมูลสินค้าขายดีจาก API
-const topProductsRaw = ref<any>(null); 
+const topProductsRaw = ref<any>(null);
 
 // --- 2. Computed Properties (Logic อิงตาม Data จริง) ---
 
 // คำนวณ Stats ด้านบนจากออเดอร์ล่าสุด
 const stats = computed(() => {
   const orders = recentOrders.value || [];
-  
+
   const totalRevenue = orders
     .filter((order) => order.status === "completed")
     .reduce((sum, order) => sum + (Number(order.total) || 0), 0);
@@ -319,30 +325,40 @@ const stats = computed(() => {
 // นับสถานะคำสั่งซื้อ (ฝั่งขวา)
 const orderStatusCounts = computed(() => {
   const orders = recentOrders.value || [];
-  const counts = { pending: 0, confirmed: 0, processing: 0, shipped: 0, completed: 0, cancelled: 0 };
-  
-  orders.forEach(o => {
-    if (counts.hasOwnProperty(o.status)) {
-      counts[o.status as keyof typeof counts]++;
+
+  // 1. กำหนด Initial State และใช้ Type ให้ถูกต้อง
+  const initialCounts: Record<string, number> = {
+    pending: 0,
+    confirmed: 0,
+    processing: 0,
+    shipped: 0,
+    completed: 0,
+    cancelled: 0,
+  };
+
+  // 2. ใช้ reduce เพื่อจบงานในลูปเดียว
+  return orders.reduce((acc, { status }) => {
+    if (status in acc) {
+      acc[status]++;
     }
-  });
-  return counts;
+    return acc;
+  }, { ...initialCounts }); // ใช้ Spread เพื่อไม่ให้ค่าตั้งต้นเพี้ยนเมื่อ Re-compute
 });
 
 // แปลงข้อมูลสินค้าขายดีให้พร้อมแสดงผล (ฝั่งซ้าย)
 const topProductsDisplay = computed(() => {
   const data = topProductsRaw.value;
-  
+
   // เช็คว่าถ้า data ไม่มีค่า หรือไม่ใช่ Array ให้คืนค่าว่าง
   if (!data || !Array.isArray(data)) {
     return [];
   }
-  
+
   // Map ข้อมูลตามโครงสร้างที่เห็นใน Log (ใช้ quantity เป็นตัวนับยอดขาย)
   return data.map((item: any) => ({
-    name: item.name || 'ไม่ระบุชื่อสินค้า',
+    name: item.name || "ไม่ระบุชื่อสินค้า",
     count: item.quantity || 0,
-    revenue: item.revenue || 0
+    revenue: item.revenue || 0,
   }));
 });
 // --- 3. Data Loading ---
@@ -353,7 +369,7 @@ const loadData = async () => {
     const [ordersRes, topRes, salesRes] = await Promise.all([
       getRecentOrders(),
       getTopProducts(),
-      getRecentSales()
+      getRecentSales(),
     ]);
 
     if (ordersRes.data) recentOrders.value = ordersRes.data;
@@ -361,15 +377,14 @@ const loadData = async () => {
     if (salesRes.data) {
       salesData.value = salesRes.data;
       // อัปเดตตัวเลขสินค้าจากข้อมูลยอดขายหรือดึงแยกตามความเหมาะสม
-      productsCount.value = new Set(salesRes.data.map((s: any) => s.product_id)).size || 15; 
+      productsCount.value =
+        new Set(salesRes.data.map((s: any) => s.product_id)).size || 15;
     }
-
   } catch (err) {
     console.error("❌ Load Error:", err);
   } finally {
     loading.value = false;
   }
-  
 };
 
 // --- 4. Helper Functions ---
@@ -388,13 +403,16 @@ const formatShortNumber = (num: number) => {
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("th-TH", {
-    year: "numeric", month: "short", day: "numeric",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 
 const formatChartDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString("th-TH", {
-    day: "numeric", month: "short",
+    day: "numeric",
+    month: "short",
   });
 };
 
@@ -405,16 +423,24 @@ const getBarHeight = (value: number) => {
 
 const getStatusClass = (status: string) => {
   const classes: Record<string, string> = {
-    pending: "warning", confirmed: "info", processing: "info",
-    shipping: "primary", completed: "success", cancelled: "danger",
+    pending: "warning",
+    confirmed: "info",
+    processing: "info",
+    shipping: "primary",
+    completed: "success",
+    cancelled: "danger",
   };
   return classes[status] || "secondary";
 };
 
 const getStatusLabel = (status: string) => {
   const labels: Record<string, string> = {
-    pending: "รอดำเนินการ", confirmed: "ยืนยันแล้ว", processing: "กำลังเตรียมสินค้า",
-    shipping: "กำลังจัดส่ง", completed: "สำเร็จแล้ว", cancelled: "ยกเลิก",
+    pending: "รอดำเนินการ",
+    confirmed: "ยืนยันแล้ว",
+    processing: "กำลังเตรียมสินค้า",
+    shipping: "กำลังจัดส่ง",
+    completed: "สำเร็จแล้ว",
+    cancelled: "ยกเลิก",
   };
   return labels[status] || status;
 };
@@ -434,7 +460,7 @@ const exportToExcel = () => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "คำสั่งซื้อ");
-  
+
   const today = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
   XLSX.writeFile(workbook, `สรุปยอดขาย_${today}.xlsx`);
 };
@@ -454,12 +480,14 @@ const userData = computed(() => ({
   avatar: "👤",
 }));
 
-const toggleMobileSidebar = () => showMobileSidebar.value = !showMobileSidebar.value;
-const closeMobileSidebar = () => showMobileSidebar.value = false;
-const handleToggle = (isCollapsed: boolean) => isSidebarCollapsed.value = isCollapsed;
+const toggleMobileSidebar = () =>
+  (showMobileSidebar.value = !showMobileSidebar.value);
+const closeMobileSidebar = () => (showMobileSidebar.value = false);
+const handleToggle = (isCollapsed: boolean) =>
+  (isSidebarCollapsed.value = isCollapsed);
 
 const handleMenuClick = (item: any) => {
-  navigateTo(`/${item.id === 'home' ? 'dashboard' : item.id}`);
+  navigateTo(`/${item.id === "home" ? "dashboard" : item.id}`);
 };
 
 onMounted(() => {
@@ -951,7 +979,8 @@ onMounted(() => {
   }
 
   .stat-icon {
-    width: 2.5rem; height: 2.5rem; /* ย่อขนาดไอคอน */
+    width: 2.5rem;
+    height: 2.5rem; /* ย่อขนาดไอคอน */
     font-size: 1.25rem;
   }
 
@@ -970,7 +999,7 @@ onMounted(() => {
     flex: 1; /* ให้หัวข้อฝั่งซ้ายจองพื้นที่ไว้ */
     padding-right: 15px;
   }
-  
+
   /* ตัวข้อมูลจริงฝั่งขวา */
   .data-table td {
     text-align: right;
@@ -1001,8 +1030,6 @@ onMounted(() => {
   cursor: not-allowed;
 }
 /* --- Media Queries สำหรับมือถือและแท็บเล็ต --- */
-
-
 
 @media (max-width: 768px) {
   /* ซ่อนหัวตารางแบบปกติ */

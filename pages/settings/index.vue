@@ -403,6 +403,7 @@
 </template>
 
 <script setup lang="ts">
+import { useSettings } from '~/composables/useSettings'
 definePageMeta({
   middleware: "auth",
 });

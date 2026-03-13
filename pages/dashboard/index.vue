@@ -55,10 +55,31 @@
         </div>
 
         <div class="charts-grid">
-          <div class="card chart-card">
-            <h2 class="card-title">ยอดขาย 7 วันล่าสุด</h2>
-            <Barchart v-if="!loading" :config="salesChartConfig" />
-          </div>
+        <div class="card chart-card">
+  <div class="card-header-flex">
+    <h2 class="card-title">🚨 สินค้าใกล้หมด (สต็อกต่ำกว่าหรือเท่ากับ 10)</h2>
+    <button @click="navigateTo('/products')" class="view-all-btn">จัดการสต็อก</button>
+  </div>
+  
+  <div class="low-stock-list">
+    <template v-if="dashboardData?.lowStockProducts && dashboardData.lowStockProducts.length > 0">
+      <div v-for="item in dashboardData.lowStockProducts" :key="item.id" class="low-stock-item">
+        <div class="item-info">
+          <span class="item-name">{{ item.name }}</span>
+          <span class="item-sku">SKU: {{ item.sku || '-' }}</span>
+        </div>
+        <div :class="['stock-badge', item.stock <= 3 ? 'critical' : 'warning']">
+          เหลือ {{ item.stock }}
+        </div>
+      </div>
+    </template>
+    
+    <div v-else class="empty-stock-state">
+      <span class="success-icon">✅</span>
+      <p>สินค้าทุกรายการมีสต็อกเพียงพอ</p>
+    </div>
+  </div>
+</div>
           <div class="card chart-card">
             <h2 class="card-title">สินค้าขายดี Top 5</h2>
             <Barchart v-if="!loading" :config="barChartConfig" />
@@ -158,12 +179,16 @@ const menuItems = [
 ];
 
 // 6. ข้อมูลสถิติ (Computed จาก Dashboard Data)
-const statsData = computed(() => ({
-  "ยอดขายวันนี้": "฿" + (dashboardData.value?.stats?.today_sales?.toLocaleString() ?? 0),
-  "คำสั่งซื้อใหม่": dashboardData.value?.stats?.new_orders_count ?? 0,
-  "ลูกค้าใหม่": dashboardData.value?.stats?.new_customers_count ?? 0,
-  "สินค้าคงเหลือ": (dashboardData.value?.stats?.total_stock ?? 0).toLocaleString(),
-}));
+const statsData = computed(() => {
+  // เพิ่มการเช็ค dashboardData?.stats เพื่อป้องกัน Error 500
+  const stats = dashboardData.value?.stats;
+  return {
+    "ยอดขายวันนี้": "฿" + (stats?.today_sales?.toLocaleString() ?? 0),
+    "คำสั่งซื้อใหม่": stats?.new_orders_count ?? 0,
+    "ลูกค้าใหม่": stats?.new_customers_count ?? 0,
+    "สินค้าคงเหลือ": (stats?.total_stock ?? 0).toLocaleString(),
+  };
+});
 
 // 7. ฟังก์ชันโหลดข้อมูลและจัดการหน้าจอ
 const loadData = async () => {
@@ -642,5 +667,176 @@ const barChartConfig = computed(() => {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/*css checkstock*/
+.low-stock-list {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
+
+.low-stock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.low-stock-item:last-child {
+  border-bottom: none;
+}
+
+.item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.item-sku {
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.stock-count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #f59e0b; /* สีส้มเตือน */
+  background: #fffbeb;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+}
+
+.stock-count.critical {
+  color: #ef4444; /* สีแดงถ้าเหลือหลักหน่วยต่ำๆ */
+  background: #fef2f2;
+}
+
+.skeleton-item {
+  height: 50px;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+}
+
+.empty-stock {
+  padding: 3rem 0;
+}
+
+
+
+/* --- ส่วนปุ่มจัดการสต็อก (View All Button) --- */
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.view-all-btn {
+  background: #f5f3ff; /* สีม่วงอ่อนๆ */
+  color: #4f46e5;
+  border: 1px solid #ddd6fe;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.view-all-btn:hover {
+  background: #4f46e5;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+/* --- รายการสินค้า Low Stock --- */
+.low-stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.low-stock-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+
+.low-stock-item:hover {
+  border-color: #e2e8f0;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.item-sku {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* --- สถานะตัวเลขสต็อก --- */
+.stock-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* กรณีเหลือ 1-3 ชิ้น (วิกฤต) */
+.stock-badge.critical {
+  background: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  animation: pulse-red 2s infinite;
+}
+
+/* กรณีเหลือ 4-10 ชิ้น (เตือน) */
+.stock-badge.warning {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fef3c7;
+}
+
+/* --- สถานะตอนสต็อกเต็ม (Empty State) --- */
+.empty-stock-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  color: #94a3b8;
+  gap: 12px;
+}
+
+.success-icon {
+  font-size: 2rem;
+  filter: grayscale(0.5);
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 </style>

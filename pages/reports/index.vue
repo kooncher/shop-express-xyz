@@ -445,7 +445,7 @@ const exportToExcel = () => {
   const dailyData = dailyReportData.value.map(day => ({
     "วันที่": day.date,
     "จำนวนออเดอร์": day.orderCount,
-    "ยอดขายรวม (บาท)": day.totalAmount,wwd
+    "ยอดขายรวม (บาท)": day.totalAmount,
     "เฉลี่ยต่อบิล": (day.totalAmount / day.orderCount).toFixed(2)
   }));
 

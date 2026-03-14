@@ -229,46 +229,38 @@
           </div>
 
           <!-- Recent Orders -->
-          <div class="card">
-            <h2 class="card-title">คำสั่งซื้อล่าสุด</h2>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>เลขที่</th>
-                    <th>ลูกค้า</th>
-                    <th>ยอดรวม</th>
-                    <th>สถานะ</th>
-                    <th>วันที่</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-if="recentOrders.length === 0">
-                    <td colspan="5" class="text-center text-muted">
-                      ยังไม่มีคำสั่งซื้อ
-                    </td>
-                  </tr>
-                  <tr v-else v-for="order in recentOrders" :key="order.id">
-                    <td data-label="เลขที่" class="font-semibold">
-                      {{ order.order_number }}
-                    </td>
-                    <td data-label="ลูกค้า">{{ order.customer_name }}</td>
-                    <td data-label="ยอดรวม" class="font-semibold">
-                      ฿{{ formatNumber(order.total) }}
-                    </td>
-                    <td data-label="สถานะ">
-                      <span :class="['badge', getStatusClass(order.status)]">
-                        {{ getStatusLabel(order.status) }}
-                      </span>
-                    </td>
-                    <td data-label="วันที่" class="text-muted">
-                      {{ formatDate(order.created_at) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="card">
+  <div class="card-header-flex">
+    <h2 class="card-title">📅 สรุปยอดขายรายวัน (ย้อนหลัง)</h2>
+  </div>
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>วันที่</th>
+          <th>จำนวนออเดอร์</th>
+          <th>ยอดขายรวม</th>
+          <th>ค่าเฉลี่ยต่อออเดอร์</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="day in dailyReportData" :key="day.date">
+          <td data-label="วันที่" class="font-semibold">{{ formatDate(day.date) }}</td>
+          <td data-label="จำนวนออเดอร์">{{ day.orderCount }} รายการ</td>
+          <td data-label="ยอดขายรวม" class="font-bold text-indigo-600">
+            ฿{{ formatNumber(day.totalAmount) }}
+          </td>
+          <td data-label="เฉลี่ย/บิล" class="text-muted">
+            ฿{{ formatNumber(day.totalAmount / day.orderCount) }}
+          </td>
+        </tr>
+        <tr v-if="dailyReportData.length === 0">
+          <td colspan="4" class="empty-message">ไม่พบข้อมูลสรุปยอดขาย</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
         </div>
       </div>
     </main>
@@ -445,26 +437,62 @@ const getStatusLabel = (status: string) => {
   return labels[status] || status;
 };
 
-// --- 5. Actions & Navigation ---
+// --- 5. Export Excel ---
 const exportToExcel = () => {
-  if (recentOrders.value.length === 0) return alert("ไม่มีข้อมูลสำหรับส่งออก");
+  if (!recentOrders.value.length) return alert("ไม่มีข้อมูลสำหรับส่งออก");
 
-  const data = recentOrders.value.map((order) => ({
-    เลขที่คำสั่งซื้อ: order.order_number,
-    ชื่อลูกค้า: order.customer_name,
-    "ยอดรวม (บาท)": order.total,
-    สถานะ: getStatusLabel(order.status),
-    วันที่สั่งซื้อ: new Date(order.created_at).toLocaleDateString("en-GB"),
+  // 1. เตรียมข้อมูลสรุปยอดขายรายวัน (เหมือนในตารางที่เราเพิ่งทำ)
+  const dailyData = dailyReportData.value.map(day => ({
+    "วันที่": day.date,
+    "จำนวนออเดอร์": day.orderCount,
+    "ยอดขายรวม (บาท)": day.totalAmount,wwd
+    "เฉลี่ยต่อบิล": (day.totalAmount / day.orderCount).toFixed(2)
   }));
 
-  const worksheet = XLSX.utils.json_to_sheet(data);
+  // 2. เตรียมข้อมูลสินค้าขายดี
+  const productData = topProductsDisplay.value.map(item => ({
+    "ชื่อสินค้า": item.name,
+    "จำนวนที่ขายได้": item.count,
+    "ยอดขายรวม": item.revenue
+  }));
+
+  // 3. สร้าง Workbook และเพิ่ม Sheet ต่างๆ
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "คำสั่งซื้อ");
+  
+  const sheet1 = XLSX.utils.json_to_sheet(dailyData);
+  XLSX.utils.book_append_sheet(workbook, sheet1, "สรุปยอดขายรายวัน");
 
-  const today = new Date().toLocaleDateString("en-GB").replace(/\//g, "-");
-  XLSX.writeFile(workbook, `สรุปยอดขาย_${today}.xlsx`);
+  const sheet2 = XLSX.utils.json_to_sheet(productData);
+  XLSX.utils.book_append_sheet(workbook, sheet2, "สินค้าขายดี");
+
+  // 4. สั่ง Download
+  const today = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(workbook, `Business_Report_${today}.xlsx`);
 };
+// เพิ่ม Computed สำหรับคำนวณสรุปรายวัน
+const dailyReportData = computed(() => {
+  const orders = recentOrders.value || [];
+  
+  // สร้าง Object เพื่อเก็บข้อมูลแยกตามวันที่
+  const grouped = orders.reduce((acc: any, order) => {
+    // ตัดเอาแค่วันที่ (YYYY-MM-DD)
+    const date = order.created_at.split('T')[0];
+    
+    if (!acc[date]) {
+      acc[date] = { date, orderCount: 0, totalAmount: 0 };
+    }
+    
+    acc[date].orderCount += 1;
+    acc[date].totalAmount += Number(order.total) || 0;
+    
+    return acc;
+  }, {});
 
+  // แปลงเป็น Array และเรียงจากวันที่ล่าสุดขึ้นก่อน
+  return Object.values(grouped).sort((a: any, b: any) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+});
 const menuItems = ref([
   { id: "home", label: "หน้าแรก", icon: "🏠" },
   { id: "products", label: "สินค้า", icon: "📦" },

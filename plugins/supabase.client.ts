@@ -8,10 +8,10 @@ export default defineNuxtPlugin(() => {
     config.public.supabaseKey,
     {
       auth: {
-        persistSession: true,  // เพิ่มบรรทัดนี้
-        autoRefreshToken: true,  // เพิ่มบรรทัดนี้
-        detectSessionInUrl: true,  // เพิ่มบรรทัดนี้
-        storage: window.localStorage  // เพิ่มบรรทัดนี้
+        persistSession: true,  
+        autoRefreshToken: true,  
+        detectSessionInUrl: true,  
+        storage: window.localStorage  
       }
     }
   )

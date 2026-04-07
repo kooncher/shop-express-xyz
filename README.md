@@ -1,38 +1,112 @@
-# 🛒 E-Commerce Dashboard (Nuxt 3 + Supabase)
+# Shop Express 🛒
 
-ระบบจัดการร้านค้าออนไลน์ (Inventory Management System) แบบ Full-stack ที่พัฒนาด้วย Nuxt 3 และใช้ Supabase เป็นระบบหลังบ้าน มาพร้อมระบบจัดการสินค้า, สถิติยอดขาย และระบบสมาชิกแยกสิทธิ์การใช้งานอย่างชัดเจน
+Shop Express is a mini e-commerce web application built to practice
+modern frontend development using Vue.js.
+The application allows users to browse products, filter by categories,
+and manage a shopping cart through a responsive interface.
 
----
+This project is divided into two parts:
 
-## ✨ ฟีเจอร์หลัก (Key Features)
+-   **Customer Application** -- product browsing and shopping experience
+-   **Admin Dashboard** -- product management system
 
-- 🔐 **Authentication & Security**
-  - ระบบสมัครสมาชิกและเข้าสู่ระบบผ่าน Supabase Auth
-  - Middleware ตรวจสอบสิทธิ์การเข้าถึงหน้า Dashboard และ Login
-  - Row Level Security (RLS) ปกป้องข้อมูลในระดับ Database
+------------------------------------------------------------------------
 
-- 📊 **Admin Dashboard**
-  - สรุปยอดขายและสถิติสินค้า (Stats Cards) เช่น จำนวนสินค้าทั้งหมด, สินค้าใกล้หมด และสินค้าหมด
-  - Sidebar แบบ Collapsible ปรับตามการใช้งาน (Responsive Design)
-  - ระบบแยกสิทธิ์ผู้ใช้ (Role-based Access Control: Admin / Customer)
+## 🚀 Live Demo
 
-- 📦 **Inventory Management**
-  - ระบบจัดการสินค้าครบวงจร (CRUD: Create, Read, Update, Delete)
-  - ค้นหาสินค้า (Search) และกรองตามหมวดหมู่ (Category Filter)
-  - ระบบแจ้งเตือนสถานะสต๊อก (In Stock, Low Stock, Out of Stock)
+Customer Website
+https://shop-express-xyz-g46r.vercel.app/
 
-- 🎨 **Modern UI/UX**
-  - พัฒนาด้วย Tailwind CSS ดีไซน์สวยงามและโหลดเร็ว
-  - รองรับการใช้งานบนมือถือ (Mobile-first Responsive Table)
-------------------------------------------------------------------
-🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
-Framework: Nuxt 3
+Role
 
-Database/Auth: Supabase
+Admin
+id : test@gmail.com
+pass : tam123456
 
-Styling: Tailwind CSS
+------------------------------------------------------------------------
 
-Hosting: Vercel
+## 🧰 Tech Stack
 
-พัฒนาโดย: นายจิตติภัทร เทพทา
+**Frontend** - Vue.js - Pinia (State Management) - TailwindCSS / DaisyUI
 
+**Tools** - Vercel (Deployment) - GitHub (Version Control)
+
+------------------------------------------------------------------------
+
+## ✨ Features
+
+### Customer Side
+
+-   Browse product list
+-   Filter products by category
+-   Add items to cart
+-   Manage shopping cart
+-   Responsive UI design
+
+### Admin Side
+
+-   Manage product data
+-   Add new products
+-   Edit product information
+-   Delete products
+
+------------------------------------------------------------------------
+
+## 📂 Project Structure
+
+    shop-express
+    │
+    ├── components
+    ├── composables
+    ├── pages
+    ├── stores
+    ├── assets
+    ├── layouts
+    └── public
+
+------------------------------------------------------------------------
+
+## ⚙️ Installation
+
+Clone the repository
+
+``` bash
+git clone https://github.com/kooncher/shop-express-xyz.git
+```
+
+Install dependencies
+
+``` bash
+npm install
+```
+
+Run development server
+
+``` bash
+npm run dev
+```
+
+Build for production
+
+``` bash
+npm run build
+```
+
+------------------------------------------------------------------------
+
+## 🎯 Purpose of the Project
+
+This project was created to practice:
+-   Component-based frontend architecture
+-   State management with Pinia
+-   Responsive UI development
+-   Deploying applications using Vercel
+
+------------------------------------------------------------------------
+
+## 👨‍💻 Author
+
+**Jittipat Thepta**
+Frontend Developer
+
+Email: jittipat2542@gmail.com

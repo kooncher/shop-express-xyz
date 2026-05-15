@@ -38,7 +38,7 @@
                   :key="customer.id"
                   :value="customer.id"
                 >
-                  {{ customer.name }} ({{ customer.phone || "ไม่มีเบอร์" }})
+                  {{ customer.full_name }} ({{ customer.phone || "ไม่มีเบอร์" }})
                 </option>
               </select>
             </div>

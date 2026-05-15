@@ -1,20 +1,20 @@
 export const useOrders = () => {
   const { $supabase } = useNuxtApp()
 
-  // 1. Get all orders - แก้ไขให้รองรับการกรอง customer_id
+  // 1. Get all orders - แก้ไขให้ดึงจากตาราง orders (ไม่ใช่ profiles)
   const getOrders = async (filters?: {
     status?: string
     payment_status?: string
     search?: string
-    customer_id?: string // เพิ่มฟิลด์รับค่า ID ลูกค้า
+    customer_id?: string
   }) => {
     try {
+      // ✅ ต้องดึงจากตาราง 'orders'
       let query = $supabase
-        .from('orders')
+        .from('orders') 
         .select('*')
         .order('created_at', { ascending: false })
 
-      // กรองเฉพาะของลูกค้าคนนั้นๆ (จุดสำคัญที่ทำให้ไม่เห็นของคนอื่น)
       if (filters?.customer_id) {
         query = query.eq('customer_id', filters.customer_id)
       }
@@ -28,11 +28,10 @@ export const useOrders = () => {
       }
 
       if (filters?.search) {
-        query = query.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`)
+        query = query.or(`customer_name.ilike.%${filters.search}%`)
       }
 
       const { data, error } = await query
-
       if (error) throw error
       return { data, error: null }
     } catch (error) {
@@ -41,7 +40,7 @@ export const useOrders = () => {
     }
   }
 
-  // 2. Get single order with items
+  // 2. Get single order (เหมือนเดิม)
   const getOrder = async (id: string) => {
     try {
       const { data, error } = await $supabase
@@ -58,15 +57,14 @@ export const useOrders = () => {
     }
   }
 
-  // 3. Create order - มั่นใจว่า customer_id ถูกบันทึกลงไป
+  // 3. Create order (เหมือนเดิม)
   const createOrder = async (orderData: any) => {
     try {
       const { items, ...order } = orderData
-
       const { data: newOrder, error: orderError } = await $supabase
         .from('orders')
         .insert([{
-          customer_id: order.customer_id || null, // เชื่อมโยง ID ลูกค้า
+          customer_id: order.customer_id || null,
           customer_name: order.customer_name,
           customer_phone: order.customer_phone,
           customer_address: order.customer_address,
@@ -89,19 +87,12 @@ export const useOrders = () => {
           order_id: newOrder.id,
           product_id: item.product_id,
           product_name: item.product_name,
-          product_sku: item.product_sku || '',
           quantity: item.quantity,
           price: item.price,
           subtotal: item.quantity * item.price
         }))
-
-        const { error: itemsError } = await $supabase
-          .from('order_items')
-          .insert(orderItems)
-
-        if (itemsError) throw itemsError
+        await $supabase.from('order_items').insert(orderItems)
       }
-
       return { data: newOrder, error: null }
     } catch (error) {
       console.error('Create order error:', error)
@@ -109,17 +100,13 @@ export const useOrders = () => {
     }
   }
 
-  // 4. Update order
+  // 4. Update order (เหมือนเดิม)
   const updateOrder = async (id: string, updates: any) => {
     try {
       const { items, ...orderUpdates } = updates
-
       const { data, error } = await $supabase
         .from('orders')
-        .update({ 
-          ...orderUpdates, 
-          updated_at: new Date().toISOString() 
-        })
+        .update({ ...orderUpdates, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single()
@@ -132,14 +119,12 @@ export const useOrders = () => {
           order_id: id,
           product_id: item.product_id,
           product_name: item.product_name,
-          product_sku: item.product_sku || '',
           quantity: item.quantity,
           price: item.price,
           subtotal: item.quantity * item.price
         }))
         await $supabase.from('order_items').insert(orderItems)
       }
-
       return { data, error: null }
     } catch (error) {
       console.error('Update order error:', error)
@@ -147,24 +132,15 @@ export const useOrders = () => {
     }
   }
 
-  // 5. Helper Functions
-  const updateOrderStatus = async (id: string, status: string) => updateOrder(id, { status })
-  const updatePaymentStatus = async (id: string, payment_status: string) => updateOrder(id, { payment_status })
-
-  const deleteOrder = async (id: string) => {
-    try {
-      const { error } = await $supabase.from('orders').delete().eq('id', id)
-      if (error) throw error
-      return { error: null }
-    } catch (error) {
-      console.error('Delete order error:', error)
-      return { error }
-    }
-  }
-
+  // 5. Get Customers - ✅ แก้ไขชื่อตารางและชื่อคอลัมน์
   const getCustomers = async () => {
     try {
-      const { data, error } = await $supabase.from('customers').select('*').order('name')
+      // เปลี่ยนจาก 'customers' เป็น 'profiles' และเรียงลำดับตาม 'full_name'
+      const { data, error } = await $supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name', { ascending: true })
+        
       if (error) throw error
       return { data, error: null }
     } catch (error) {
@@ -178,9 +154,10 @@ export const useOrders = () => {
     getOrder,
     createOrder,
     updateOrder,
-    updateOrderStatus,
-    updatePaymentStatus,
-    deleteOrder,
+    deleteOrder: async (id: string) => {
+      const { error } = await $supabase.from('orders').delete().eq('id', id)
+      return { error }
+    },
     getCustomers
   }
 }

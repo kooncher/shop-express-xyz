@@ -40,7 +40,36 @@
             />
           </div>
         </div>
+<div class="form-group">
+  <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
+  <div class="input-wrapper">
+    <span class="input-icon">📞</span>
+    <input
+      id="phone"
+      v-model="phone"
+      type="tel"
+      class="form-input"
+      placeholder="08XXXXXXXX"
+      maxlength="10"
+      required
+    />
+  </div>
+</div>
 
+<div class="form-group">
+  <label for="address" class="form-label">ที่อยู่จัดส่ง</label>
+  <div class="input-wrapper">
+    <span class="input-icon">📍</span>
+    <textarea
+      id="address"
+      v-model="address"
+      class="form-input"
+      placeholder="บ้านเลขที่, ถนน, แขวง/ตำบล..."
+      rows="2"
+      required
+    ></textarea>
+  </div>
+</div>
         <div class="form-group">
           <label for="password" class="form-label">รหัสผ่าน</label>
           <div class="input-wrapper">
@@ -105,7 +134,7 @@
       <div class="circle circle-3"></div>
     </div>
   </div>
-  <LoadingScreen v-else />
+  <GlobalComponentsLoadingScreen v-else />
 </template>
 
 <script setup lang="ts">
@@ -118,6 +147,8 @@ const { signUp, user, initAuth } = useAuth()
 const fullName = ref('')
 const email = ref('')
 const password = ref('')
+const phone = ref('')
+const address = ref('')
 const confirmPassword = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -144,12 +175,22 @@ const handleRegister = async () => {
     // 1. Trim ข้อมูลทั้งหมดก่อนเริ่มตรวจ
     const cleanFullName = fullName.value.trim()
     const cleanEmail = email.value.trim()
+    const cleanPhone = phone.value.trim()
+    const cleanAddress = address.value.trim()
     const cleanPassword = password.value
     const cleanConfirm = confirmPassword.value
 
     // 2. Validate ชื่อ
     if (cleanFullName.length < 3) {
       errorMessage.value = 'กรุณากรอกชื่อ-นามสกุลให้ครบถ้วน'
+      return
+    }
+    if (cleanPhone.length !== 10 || !/^\d{10}$/.test(cleanPhone)) {
+      errorMessage.value = 'กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง (10 หลัก)'
+      return
+    }
+    if (cleanAddress.length < 10) {
+      errorMessage.value = 'กรุณากรอกที่อยู่จัดส่งให้ครบถ้วน'
       return
     }
 
@@ -171,15 +212,22 @@ const handleRegister = async () => {
       return
     }
 
-    const { data, error } = await signUp(email.value, password.value, fullName.value)
-
+    const { data, error } = await signUp(
+  cleanEmail, 
+  cleanPassword, 
+  cleanFullName, 
+  cleanPhone, 
+  cleanAddress
+)
     if (error) {
       // แปลข้อความ error
       if (error.message?.includes('already registered')) {
         errorMessage.value = 'อีเมลนี้ถูกใช้งานแล้ว'
       } else if (error.message?.includes('Invalid email')) {
         errorMessage.value = 'รูปแบบอีเมลไม่ถูกต้อง'
-      } else if (error.message?.includes('Password')) {
+      } 
+      
+      else if (error.message?.includes('Password')) {
         errorMessage.value = 'รหัสผ่านไม่ถูกต้อง'
       } else {
         errorMessage.value = error.message || 'เกิดข้อผิดพลาดในการสมัครสมาชิก'
@@ -296,12 +344,13 @@ const handleRegister = async () => {
 .input-wrapper {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* ✅ เปลี่ยนจาก center เป็น flex-start */
 }
 
 .input-icon {
   position: absolute;
   left: 1rem;
+  top: 0.875rem; /* ✅ ล็อคให้ไอคอนอยู่ด้านบนเสมอ */
   font-size: 1.25rem;
   pointer-events: none;
 }
@@ -523,5 +572,12 @@ const handleRegister = async () => {
   .logo-text {
     font-size: 1.5rem;
   }
+}
+textarea.form-input {
+  resize: vertical;      /* บังคับขยายได้แค่แนวตั้ง */
+  min-height: 120px;     /* กำหนดความสูงเริ่มต้น */
+  max-height: 400px;     /* กันไม่ให้ขยายจนล้นจอ */
+  line-height: 1.5;
+  padding-top: 0.875rem; /* จัดตำแหน่งข้อความด้านบนให้สวย */
 }
 </style>

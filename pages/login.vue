@@ -45,7 +45,7 @@
       </div>
     </div>
   </div>
-  <LoadingScreen v-else />
+  <GlobalComponentsLoadingScreen v-else />
 </template>
 
 <script setup lang="ts">
